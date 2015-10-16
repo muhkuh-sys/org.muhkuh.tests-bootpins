@@ -70,6 +70,7 @@ env_default.Version('targets/version/version.h', 'templates/version.h')
 #
 SConscript('bootpins/SConscript')
 Import('bootpins_netx500', 'bootpins_netx56', 'bootpins_netx50', 'bootpins_netx10')
+Import('bootpins_lua')
 
 
 #----------------------------------------------------------------------------
@@ -159,4 +160,4 @@ Command('targets/testbench/netx/bootpins_netx56.bin',  bootpins_netx56,  Copy("$
 Command('targets/testbench/netx/bootpins_netx500.bin', bootpins_netx500, Copy("$TARGET", "$SOURCE"))
 
 # Copy all LUA scripts.
-#Command('targets/testbench/lua/bootpins.lua',  'lua/bootpins.lua', Copy("$TARGET", "$SOURCE"))
+Command('targets/testbench/lua/bootpins.lua',  bootpins_lua, Copy("$TARGET", "$SOURCE"))
