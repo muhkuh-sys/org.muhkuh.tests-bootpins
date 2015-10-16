@@ -41,7 +41,7 @@ sources = """
 
 #----------------------------------------------------------------------------
 #
-# Build the crc test.
+# Build the bootpins test.
 #
 aCppPath = ['src', '#platform/src', '#platform/src/lib', '#targets/version']
 
@@ -79,4 +79,11 @@ bootpins_netx10 = env_netx10_t.ObjCopy('targets/bootpins_netx10.bin', elf_netx10
 
 Export('bootpins_netx500', 'bootpins_netx56', 'bootpins_netx50', 'bootpins_netx10')
 
+
+#----------------------------------------------------------------------------
+#
+# Process the LUA template.
+#
+bootpins_lua = env_netx500_t.GccSymbolTemplate('targets/lua/bootpins.lua', elf_netx500_t, GCCSYMBOLTEMPLATE_TEMPLATE=File('templates/bootpins.lua'))
+Export('bootpins_lua')
 
