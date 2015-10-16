@@ -16,7 +16,7 @@ CFG_aParameterDefinitions = {
 	{
 		name="expected_strapping_options",
 		default=0,
-		help="End address of the area to build the CRC32 for.",
+		help="The expected strapping options.",
 		mandatory=false,
 		validate=parameters.test_uint32,
 		constrains=nil
