@@ -14,7 +14,12 @@ typedef enum CHIPID_ENUM
 	CHIPID_netX51A                              =  7,
 	CHIPID_netX51B                              =  8,
 	CHIPID_netX52A                              =  9,
-	CHIPID_netX52B                              = 10
+	CHIPID_netX52B                              = 10,
+	CHIPID_netX4000_RELAXED                     = 11,
+	CHIPID_netX4000_FULL                        = 12,
+	CHIPID_netX4000_SMALL                       = 13,
+	CHIPID_netX90_MPW                           = 14,
+	CHIPID_netX90                               = 15
 } CHIPID_T;
 
 

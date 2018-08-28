@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------#
-#   Copyright (C) 2015 by Christoph Thelen                                #
+#   Copyright (C) 2018 by Christoph Thelen                                #
 #   doc_bacardi@users.sourceforge.net                                     #
 #                                                                         #
 #   This program is free software; you can redistribute it and/or modify  #
@@ -25,43 +25,36 @@
 # Set up the Muhkuh Build System.
 #
 SConscript('mbs/SConscript')
-Import('env_default')
+Import('atEnv')
 
-import os.path
+# Create a build environment for the ARM9 based netX chips.
+env_arm9 = atEnv.DEFAULT.CreateEnvironment(['gcc-arm-none-eabi-4.7', 'asciidoc'])
+env_arm9.CreateCompilerEnv('NETX500', ['arch=armv5te'])
+env_arm9.CreateCompilerEnv('NETX56', ['arch=armv5te'])
+env_arm9.CreateCompilerEnv('NETX50', ['arch=armv5te'])
+env_arm9.CreateCompilerEnv('NETX10', ['arch=armv5te'])
 
+# Create a build environment for the Cortex-R7 and Cortex-A9 based netX chips.
+env_cortexR7 = atEnv.DEFAULT.CreateEnvironment(['gcc-arm-none-eabi-4.9', 'asciidoc'])
+env_cortexR7.CreateCompilerEnv('NETX4000_RELAXED', ['arch=armv7', 'thumb'], ['arch=armv7-r', 'thumb'])
+env_cortexR7.CreateCompilerEnv('NETX4000', ['arch=armv7', 'thumb'], ['arch=armv7-r', 'thumb'])
 
-#----------------------------------------------------------------------------
-#
-# Create the compiler environments.
-#
-env_netx500_default = env_default.CreateCompilerEnv('500', ['arch=armv5te'])
-env_netx500_default.Replace(BOOTBLOCK_CHIPTYPE = 500)
+# Create a build environment for the Cortex-M4 based netX chips.
+env_cortexM4 = atEnv.DEFAULT.CreateEnvironment(['gcc-arm-none-eabi-4.9', 'asciidoc'])
+env_cortexM4.CreateCompilerEnv('NETX90_MPW', ['arch=armv7', 'thumb'], ['arch=armv7e-m', 'thumb'])
+env_cortexM4.CreateCompilerEnv('NETX90', ['arch=armv7', 'thumb'], ['arch=armv7e-m', 'thumb'])
 
-env_netx56_default = env_default.CreateCompilerEnv('56', ['arch=armv5te'])
-env_netx56_default.Replace(BOOTBLOCK_CHIPTYPE = 56)
+# Build the platform libraries.
+SConscript('platform/SConscript')
 
-env_netx50_default = env_default.CreateCompilerEnv('50', ['arch=armv5te'])
-env_netx50_default.Replace(BOOTBLOCK_CHIPTYPE = 50)
-
-env_netx10_default = env_default.CreateCompilerEnv('10', ['arch=armv5te'])
-env_netx10_default.Replace(BOOTBLOCK_CHIPTYPE = 10)
-
-Export('env_netx500_default', 'env_netx56_default', 'env_netx50_default', 'env_netx10_default')
-
-
-#----------------------------------------------------------------------------
-#
-# Build the platform library.
-#
-PLATFORM_LIB_CFG_BUILDS = [500, 56, 50, 10]
-SConscript('platform/SConscript', exports='PLATFORM_LIB_CFG_BUILDS')
+import os
 
 
 #----------------------------------------------------------------------------
 #
 # Get the source code version from the VCS.
 #
-env_default.Version('targets/version/version.h', 'templates/version.h')
+atEnv.DEFAULT.Version('targets/version/version.h', 'templates/version.h')
 
 
 #----------------------------------------------------------------------------
@@ -69,7 +62,7 @@ env_default.Version('targets/version/version.h', 'templates/version.h')
 # Build all sub-projects.
 #
 SConscript('bootpins/SConscript')
-Import('bootpins_netx500', 'bootpins_netx56', 'bootpins_netx50', 'bootpins_netx10')
+Import('bootpins_netx4000', 'bootpins_netx500', 'bootpins_netx90_mpw', 'bootpins_netx90', 'bootpins_netx56', 'bootpins_netx50', 'bootpins_netx10')
 Import('bootpins_lua')
 
 
@@ -79,85 +72,87 @@ Import('bootpins_lua')
 #
 
 # Get the default attributes.
-aAttribs = env_default['ASCIIDOC_ATTRIBUTES']
+aAttribs = atEnv.DEFAULT['ASCIIDOC_ATTRIBUTES']
 # Add some custom attributes.
 aAttribs.update(dict({
-	# Use ASCIIMath formulas.
-	'asciimath': True,
-	
-	# Embed images into the HTML file as data URIs.
-	'data-uri': True,
-	
-	# Use icons instead of text for markers and callouts.
-	'icons': True,
-	
-	# Use numbers in the table of contents.
-	'numbered': True,
-	
-	# Generate a scrollable table of contents on the left of the text.
-	'toc2': True,
-	
-	# Use 4 levels in the table of contents.
-	'toclevels': 4
-}))
+    # Use ASCIIMath formulas.
+    'asciimath': True,
 
-doc = env_default.Asciidoc('targets/doc/org.muhkuh.tests.bootpins.html', 'README.asciidoc', ASCIIDOC_BACKEND='html5', ASCIIDOC_ATTRIBUTES=aAttribs)
+    # Embed images into the HTML file as data URIs.
+    'data-uri': True,
+
+    # Use icons instead of text for markers and callouts.
+    'icons': True,
+
+    # Use numbers in the table of contents.
+    'numbered': True,
+
+    # Generate a scrollable table of contents on the left of the text.
+    'toc2': True,
+
+    # Use 4 levels in the table of contents.
+    'toclevels': 4
+}))
+tDoc = atEnv.DEFAULT.Asciidoc('targets/doc/org.muhkuh.tests.bootpins.html', 'README.asciidoc', ASCIIDOC_BACKEND='html5', ASCIIDOC_ATTRIBUTES=aAttribs)
 
 
 #----------------------------------------------------------------------------
 #
 # Build the artifact.
 #
+strGroup = 'org.muhkuh.tests'
+strModule = 'bootpins'
 
-aArtifactServer = ('nexus@netx01', 'muhkuh', 'muhkuh_snapshots')
-strArtifactGroup = 'tests.muhkuh.org'
-strArtifactId = 'bootpins'
+# Split the group by dots.
+aGroup = strGroup.split('.')
+# Build the path for all artifacts.
+strModulePath = 'targets/jonchki/repository/%s/%s/%s' % ('/'.join(aGroup), strModule, PROJECT_VERSION)
 
+# Set the name of the artifact.
+strArtifact0 = 'lua5.1-bootpins'
 
-tArcList0 = env_default.ArchiveList('zip')
-
-tArcList0.AddFiles('doc/',
-	doc)
-
+tArcList0 = atEnv.DEFAULT.ArchiveList('zip')
 tArcList0.AddFiles('netx/',
-	bootpins_netx500,
-	bootpins_netx56,
-	bootpins_netx50,
-	bootpins_netx10)
-
+    bootpins_netx10,
+    bootpins_netx50,
+    bootpins_netx56,
+    bootpins_netx90_mpw,
+    bootpins_netx90,
+    bootpins_netx500,
+    bootpins_netx4000)
+tArcList0.AddFiles('lua/',
+    bootpins_lua,
+    'lua/test_class_bootpins.lua')
 tArcList0.AddFiles('templates/',
-	'templates/test.lua')
-
+    'lua/test.lua')
+tArcList0.AddFiles('doc/',
+    tDoc)
 tArcList0.AddFiles('',
-	'ivy/org.muhkuh.tests.bootpins/install.xml')
+    'installer/jonchki/lua5.1/install.lua',
+    'installer/jonchki/lua5.1/install_testcase.lua')
 
-
-aArtifactGroupReverse = strArtifactGroup.split('.')
-aArtifactGroupReverse.reverse()
-
-strArtifactPath = 'targets/ivy/repository/%s/%s/%s' % ('/'.join(aArtifactGroupReverse),strArtifactId,PROJECT_VERSION)
-tArc = env_default.Archive(os.path.join(strArtifactPath, '%s-%s.zip' % (strArtifactId,PROJECT_VERSION)), None, ARCHIVE_CONTENTS=tArcList0)
-tIvy = env_default.Version(os.path.join(strArtifactPath, 'ivy-%s.xml' % PROJECT_VERSION), 'ivy/%s.%s/ivy.xml' % ('.'.join(aArtifactGroupReverse),strArtifactId))
-
-env_default.AddArtifact(tArc, aArtifactServer, strArtifactGroup, strArtifactId, PROJECT_VERSION, 'zip')
-env_default.AddArtifact(tIvy, aArtifactServer, strArtifactGroup, strArtifactId, PROJECT_VERSION, 'ivy')
-
-tArtifacts = env_default.Artifact('targets/artifacts.xml', None)
-
-# Copy the artifacts to a fixed filename to allow a deploy to github.
-Command('targets/ivy/%s.zip' % strArtifactId,  tArc,  Copy("$TARGET", "$SOURCE"))
-Command('targets/ivy/ivy.xml', tIvy,  Copy("$TARGET", "$SOURCE"))
+tArtifact0 = atEnv.DEFAULT.Archive(os.path.join(strModulePath, '%s-%s.zip' % (strArtifact0, PROJECT_VERSION)), None, ARCHIVE_CONTENTS = tArcList0)
+tArtifact0Hash = atEnv.DEFAULT.Hash('%s.hash' % tArtifact0[0].get_path(), tArtifact0[0].get_path(), HASH_ALGORITHM='md5,sha1,sha224,sha256,sha384,sha512', HASH_TEMPLATE='${ID_UC}:${HASH}\n')
+tConfiguration0 = atEnv.DEFAULT.Version(os.path.join(strModulePath, '%s-%s.xml' % (strArtifact0, PROJECT_VERSION)), 'installer/jonchki/lua5.1/%s.xml' % strModule)
+tConfiguration0Hash = atEnv.DEFAULT.Hash('%s.hash' % tConfiguration0[0].get_path(), tConfiguration0[0].get_path(), HASH_ALGORITHM='md5,sha1,sha224,sha256,sha384,sha512', HASH_TEMPLATE='${ID_UC}:${HASH}\n')
+tArtifact0Pom = atEnv.DEFAULT.ArtifactVersion(os.path.join(strModulePath, '%s-%s.pom' % (strArtifact0, PROJECT_VERSION)), 'installer/jonchki/lua5.1/pom.xml')
 
 
 #----------------------------------------------------------------------------
 #
 # Make a local demo installation.
 #
-# Copy all binary binaries.
-Command('targets/testbench/netx/bootpins_netx10.bin',  bootpins_netx10,  Copy("$TARGET", "$SOURCE"))
-Command('targets/testbench/netx/bootpins_netx50.bin',  bootpins_netx50,  Copy("$TARGET", "$SOURCE"))
-Command('targets/testbench/netx/bootpins_netx56.bin',  bootpins_netx56,  Copy("$TARGET", "$SOURCE"))
-Command('targets/testbench/netx/bootpins_netx500.bin', bootpins_netx500, Copy("$TARGET", "$SOURCE"))
+atCopy = {
+    'targets/testbench/netx/bootpins_netx4000.bin':                bootpins_netx4000,
+    'targets/testbench/netx/bootpins_netx500.bin':                 bootpins_netx500,
+    'targets/testbench/netx/bootpins_netx90_mpw.bin':              bootpins_netx90,
+    'targets/testbench/netx/bootpins_netx90.bin':                  bootpins_netx90,
+    'targets/testbench/netx/bootpins_netx56.bin':                  bootpins_netx56,
+    'targets/testbench/netx/bootpins_netx50.bin':                  bootpins_netx50,
+    'targets/testbench/netx/bootpins_netx10.bin':                  bootpins_netx10,
 
-# Copy all LUA scripts.
-Command('targets/testbench/lua/bootpins.lua',  bootpins_lua, Copy("$TARGET", "$SOURCE"))
+    # Copy all LUA scripts.
+    'targets/testbench/lua/bootpins.lua':                          bootpins_lua
+}
+for strPathDst, strPathSrc in atCopy.iteritems():
+    Command(strPathDst, strPathSrc, Copy("$TARGET", "$SOURCE"))
