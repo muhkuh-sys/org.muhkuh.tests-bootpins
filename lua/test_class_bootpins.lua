@@ -1,54 +1,36 @@
 local class = require 'pl.class'
-local TestClassBootpins = class()
+local TestClass = require 'test_class'
+local TestClassBootpins = class(TestClass)
 
-function TestClassBootpins:_init(strTestName)
-  self.parameters = require 'parameters'
-  self.pl = require'pl.import_into'()
+function TestClassBootpins:_init(strTestName, uiTestCase, tLogWriter, strLogLevel)
+  self:super(strTestName, uiTestCase, tLogWriter, strLogLevel)
+
   local BootPins = require 'bootpins'
   self.bootpins = BootPins()
   self.BootpinsOTP = require 'bootpins_otp'
 
-  self.CFG_strTestName = strTestName
+  local P = self.P
+  self:__parameter {
+    P:U32('expected_boot_mode', 'The expected boot mode.'):
+      required(true),
 
-  self.CFG_aParameterDefinitions = {
-    {
-      name="expected_boot_mode",
-      default=nil,
-      help="The expected boot mode.",
-      mandatory=true,
-      validate=parameters.test_uint32,
-      constrains=nil
-    },
-    {
-      name="expected_strapping_options",
-      default=0,
-      help="The expected strapping options.",
-      mandatory=false,
-      validate=parameters.test_uint32,
-      constrains=nil
-    },
-    {
-      name="expected_chip_id",
-      default=nil,
-      help="The expected chip ID.",
-      mandatory=true,
-      validate=parameters.test_choice_single,
-      constrains="NETX500,NETX100,NETX50,NETX10,NETX51A_NETX50_COMPATIBILITY_MODE,NETX51B_NETX50_COMPATIBILITY_MODE,NETX51A,NETX51B,NETX52A,NETX52B,NETX4000_RELAXED,NETX4000_FULL,NETX4000_SMALL,NETX90_MPW,NETX90"
-    },
-    {
-      name="expected_otp_fuses",
-      default=nil,
-      help="A file defining the expected OTP fuses.",
-      mandatory=false,
-      validate=nil,
-      constrains=nil
-    }
+    P:U32('expected_strapping_options', 'The expected strapping options.'):
+      default(0):
+      required(false),
+
+    P:SC('expected_chip_id', 'The expected chip ID.'):
+      required(true):
+      constraint('NETX500,NETX100,NETX50,NETX10,NETX51A_NETX50_COMPATIBILITY_MODE,NETX51B_NETX50_COMPATIBILITY_MODE,NETX51A,NETX51B,NETX52A,NETX52B,NETX4000_RELAXED,NETX4000_FULL,NETX4000_SMALL,NETX90_MPW,NETX90'),
+
+    P:P('expected_otp_fuses', 'A file defining the expected OTP fuses.'):
+      required(false)
   }
 end
 
 
 
-function TestClassBootpins:read_otp_fuse_definition(strFile, tLog)
+function TestClassBootpins:read_otp_fuse_definition(strFile)
+  local tLog = self.tLog
   tLog.debug('Reading OTP definition "%s".', strFile)
 
   local fOK = true
@@ -93,24 +75,27 @@ end
 
 
 
-function TestClassBootpins:run(aParameters, tLog)
+function TestClassBootpins:run()
+  local atParameter = self.atParameter
+  local tLog = self.tLog
+
   ----------------------------------------------------------------------
   --
   -- Parse the parameters and collect all options.
   --
-  local ulExpectedBootMode         = tonumber(aParameters["expected_boot_mode"])
-  local ulExpectedStrappingOptions = tonumber(aParameters["expected_strapping_options"])
-  local strExpectedChipId          = aParameters["expected_chip_id"]
+  local ulExpectedBootMode         = atParameter["expected_boot_mode"]:get()
+  local ulExpectedStrappingOptions = atParameter["expected_strapping_options"]:get()
+  local strExpectedChipId          = atParameter["expected_chip_id"]:get()
   local ulExpectedChipId = self.bootpins.atChipID[strExpectedChipId]
   if ulExpectedChipId==nil then
     tLog.error('Unknown chip ID: "%s"', strExpectedChipId)
     error('Unknown chip ID.')
   end
-  local strExpectedOtpFusesFile    = aParameters['expected_otp_fuses']
+  local strExpectedOtpFusesFile    = atParameter['expected_otp_fuses']:get()
   local atExpectedOtpFuses = nil
   if strExpectedOtpFusesFile~=nil then
     -- Read the OTP fuse definition line by line.
-    atExpectedOtpFuses = self:read_otp_fuse_definition(strExpectedOtpFusesFile, tLog)
+    atExpectedOtpFuses = self:read_otp_fuse_definition(strExpectedOtpFusesFile)
     if atExpectedOtpFuses==nil then
       tLog.error('Failed to parse the OTP fuse definition in "%s".', strExpectedOtpFusesFile)
       error('Failed to parse the OTP fuse definition.')
