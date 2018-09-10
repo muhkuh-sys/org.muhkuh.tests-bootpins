@@ -122,6 +122,7 @@ tArcList0.AddFiles('netx/',
     bootpins_netx4000)
 tArcList0.AddFiles('lua/',
     bootpins_lua,
+    'lua/bootpins_otp.lua',
     'lua/test_class_bootpins.lua')
 tArcList0.AddFiles('templates/',
     'lua/test.lua')
@@ -152,7 +153,8 @@ atCopy = {
     'targets/testbench/netx/bootpins_netx10.bin':                  bootpins_netx10,
 
     # Copy all LUA scripts.
-    'targets/testbench/lua/bootpins.lua':                          bootpins_lua
+    'targets/testbench/lua/bootpins.lua':                          bootpins_lua,
+    'targets/testbench/lua/bootpins_otp.lua':                      'lua/bootpins_otp.lua'
 }
 for strPathDst, strPathSrc in atCopy.iteritems():
     Command(strPathDst, strPathSrc, Copy("$TARGET", "$SOURCE"))

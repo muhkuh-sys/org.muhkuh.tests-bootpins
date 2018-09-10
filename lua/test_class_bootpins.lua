@@ -6,6 +6,7 @@ function TestClassBootpins:_init(strTestName)
   self.pl = require'pl.import_into'()
   local BootPins = require 'bootpins'
   self.bootpins = BootPins()
+  self.BootpinsOTP = require 'bootpins_otp'
 
   self.CFG_strTestName = strTestName
 
@@ -33,8 +34,61 @@ function TestClassBootpins:_init(strTestName)
       mandatory=true,
       validate=parameters.test_choice_single,
       constrains="NETX500,NETX100,NETX50,NETX10,NETX51A_NETX50_COMPATIBILITY_MODE,NETX51B_NETX50_COMPATIBILITY_MODE,NETX51A,NETX51B,NETX52A,NETX52B,NETX4000_RELAXED,NETX4000_FULL,NETX4000_SMALL,NETX90_MPW,NETX90"
+    },
+    {
+      name="expected_otp_fuses",
+      default=nil,
+      help="A file defining the expected OTP fuses.",
+      mandatory=false,
+      validate=nil,
+      constrains=nil
     }
   }
+end
+
+
+
+function TestClassBootpins:read_otp_fuse_definition(strFile, tLog)
+  tLog.debug('Reading OTP definition "%s".', strFile)
+
+  local fOK = true
+  local atExpectedValues = {}
+  local tFile, strError = io.open(strFile, 'r')
+  if tFile==nil then
+    tLog.error('Failed to open file "%s" for reading: %s', strFile, strError)
+    fOK = false
+  else
+    repeat
+      strLine = tFile:read('*l')
+      if strLine~=nil then
+        strLine = self.pl.stringx.strip(strLine)
+        if strLine~='' and string.sub(strLine, 1)~='#' then
+          strName, strValue = string.match(strLine, '^([^%s]+)%s*=%s*([%xx]+)')
+          if strName==nil then
+            tLog.error('Failed to parse line: "%s"', strLine)
+            fOK = false
+          else
+            ulValue = tonumber(strValue)
+            if ulValue==nil then
+              tLog.error('Failed to parse the value in this line: "%s"', strLine)
+              fOK = false
+            elseif atExpectedValues[strName]~=nil then
+              tLog.error('OTP value "%s" is defined more than once.', strName)
+              fOK = false
+            else
+              atExpectedValues[strName] = ulValue
+            end
+          end
+        end
+      end
+    until strLine==nil
+  end
+
+  if fOK~=true then
+    atExpectedValues = nil
+  end
+
+  return atExpectedValues
 end
 
 
@@ -49,7 +103,18 @@ function TestClassBootpins:run(aParameters, tLog)
   local strExpectedChipId          = aParameters["expected_chip_id"]
   local ulExpectedChipId = self.bootpins.atChipID[strExpectedChipId]
   if ulExpectedChipId==nil then
-    error('Unknown chip ID: "%s"', strExpectedChipId)
+    tLog.error('Unknown chip ID: "%s"', strExpectedChipId)
+    error('Unknown chip ID.')
+  end
+  local strExpectedOtpFusesFile    = aParameters['expected_otp_fuses']
+  local atExpectedOtpFuses = nil
+  if strExpectedOtpFusesFile~=nil then
+    -- Read the OTP fuse definition line by line.
+    atExpectedOtpFuses = self:read_otp_fuse_definition(strExpectedOtpFusesFile, tLog)
+    if atExpectedOtpFuses==nil then
+      tLog.error('Failed to parse the OTP fuse definition in "%s".', strExpectedOtpFusesFile)
+      error('Failed to parse the OTP fuse definition.')
+    end
   end
 
   ----------------------------------------------------------------------
@@ -90,6 +155,15 @@ function TestClassBootpins:run(aParameters, tLog)
   end
   if fOk~=true then
     error('The detected values do not match the expected data.')
+  end
+
+  -- On the netX4000, read and compare the OTP fuses.
+  if atExpectedOtpFuses~=nil then
+    local tAsicTyp = tPlugin:GetChiptyp()
+    if tAsicTyp==romloader.ROMLOADER_CHIPTYP_NETX4000_RELAXED or tAsicTyp==romloader.ROMLOADER_CHIPTYP_NETX4000_FULL or tAsicTyp==romloader.ROMLOADER_CHIPTYP_NETX4100_SMALL then
+      local bootpins_otp = self.BootpinsOTP(tLog)
+      bootpins_otp:check(tPlugin, atExpectedOtpFuses)
+    end
   end
 
   print("")
