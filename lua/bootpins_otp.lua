@@ -65,40 +65,40 @@ function BootpinsOTP:check(tPlugin, atExpectedValues)
   -- Parse the OTP fuses.
   local strOTPFormat = [[
 HW_FUSES:{
-  MODE:{[1|
-    package:u1
-    cpu0:u1
-    cpu1:u1
+  MODE:{<[1|
+    reserved:u4
     usb2jtag:u1
-    reserved:u4]}
+    cpu1:u1
+    cpu0:u1
+    package:u1]}
 
-  CLOCK_MASK:{[1|
-    USB20:u1
-    PCIe:u1
-    SDIO:u1
-    GMAC:u1
-    SWITCH:u1
-    TES:u1
+  CLOCK_MASK:{<[1|
+    reserved:u1
     DDR:u1
-    reserved:u1]}
+    TES:u1
+    SWITCH:u1
+    GMAC:u1
+    SDIO:u1
+    PCIe:u1
+    USB20:u1]}
 
-  NETX_HW_FUSE:{[2|
-    coresight_apbap_master:u1
-    coreshight_ahbap_master:u1
-    coresight_non_invasive_debugging:u1
-    coresight_secure_invasive_debugging:u1
-    coresight_secure_non_invasive_debugging:u1
-    cortex_r7_invasive_debugging:u1
-    cortex_r7_non_invasive_debugging:u1
-    cortex_a9_invasive_debugging:u1
-    cortex_a9_non_invasive_debugging:u1
-    cortex_a9_secure_invasive_debugging:u1
-    pl310l2_cache_cortex_a9_secure_non_invasive_debugging:u1
-    netx_sysdebug:u1
-    reserved12:u1
-    cortex_r7_global_debug_disable:u1
+  NETX_HW_FUSE:{<[2|
+    netx_sysdebug_global_debug_disable:u1
     cortex_a9_global_debug_disable:u1
-    netx_sysdebug_global_debug_disable:u1]}
+    cortex_r7_global_debug_disable:u1
+    reserved12:u1
+    netx_sysdebug:u1
+    pl310l2_cache_cortex_a9_secure_non_invasive_debugging:u1
+    cortex_a9_secure_invasive_debugging:u1
+    cortex_a9_non_invasive_debugging:u1
+    cortex_a9_invasive_debugging:u1
+    cortex_r7_non_invasive_debugging:u1
+    cortex_r7_invasive_debugging:u1
+    coresight_secure_non_invasive_debugging:u1
+    coresight_secure_invasive_debugging:u1
+    coresight_non_invasive_debugging:u1
+    coreshight_ahbap_master:u1
+    coresight_apbap_master:u1]}
 }
 
 ulChipIDProtection:u2
