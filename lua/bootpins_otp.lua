@@ -66,7 +66,8 @@ function BootpinsOTP:check(tPlugin, atExpectedValues)
   local strOTPFormat = [[
 HW_FUSES:{
   MODE:{<[1|
-    reserved:u4
+    reserved:u3
+    bugfix1:u1
     usb2jtag:u1
     cpu1:u1
     cpu0:u1
