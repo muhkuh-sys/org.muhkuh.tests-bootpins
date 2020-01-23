@@ -3,7 +3,6 @@ local BootPins = class()
 
 function BootPins:_init()
   self.romloader = require 'romloader'
-  self.tester = require 'tester'
 
   local atChipID = {
     ['unknown']                            = ${CHIPID_unknown},
