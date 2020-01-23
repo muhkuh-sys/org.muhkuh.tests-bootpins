@@ -11,6 +11,9 @@ function TestClassBootpins:_init(strTestName, uiTestCase, tLogWriter, strLogLeve
 
   local P = self.P
   self:__parameter {
+    P:P('plugin', 'A pattern for the plugin to use.'):
+      required(false),
+
     P:U32('expected_boot_mode', 'The expected boot mode.'):
       required(true),
 
@@ -83,6 +86,8 @@ function TestClassBootpins:run()
   --
   -- Parse the parameters and collect all options.
   --
+  local strPluginPattern = atParameter['plugin']:get()
+
   local ulExpectedBootMode         = atParameter["expected_boot_mode"]:get()
   local ulExpectedStrappingOptions = atParameter["expected_strapping_options"]:get()
   local strExpectedChipId          = atParameter["expected_chip_id"]:get()
@@ -107,7 +112,7 @@ function TestClassBootpins:run()
   -- Open the connection to the netX.
   -- (or re-use an existing connection.)
   --
-  local tPlugin = tester.getCommonPlugin()
+  local tPlugin = tester:getCommonPlugin(strPluginPattern)
   if tPlugin==nil then
     error("No plug-in selected, nothing to do!")
   end
