@@ -21,7 +21,8 @@ function BootPins:_init()
     ['NETX4000_FULL']                      = ${CHIPID_netX4000_FULL},
     ['NETX4000_SMALL']                     = ${CHIPID_netX4000_SMALL},
     ['NETX90_MPW']                         = ${CHIPID_netX90_MPW},
-    ['NETX90']                             = ${CHIPID_netX90}
+    ['NETX90']                             = ${CHIPID_netX90},
+    ['NETX90B']                            = ${CHIPID_netX90B}
   }
   self.atChipID = atChipID
 
@@ -39,11 +40,14 @@ function BootPins:_init()
     [romloader.ROMLOADER_CHIPTYP_NETX500]          = '500',
     [romloader.ROMLOADER_CHIPTYP_NETX100]          = '500',
     [romloader.ROMLOADER_CHIPTYP_NETX90_MPW]       = '90_mpw',
---    [romloader.ROMLOADER_CHIPTYP_NETX90]           = '90',
+    [romloader.ROMLOADER_CHIPTYP_NETX90]           = '90',
+    [romloader.ROMLOADER_CHIPTYP_NETX90B]          = '90',
     [romloader.ROMLOADER_CHIPTYP_NETX56]           = '56',
     [romloader.ROMLOADER_CHIPTYP_NETX56B]          = '56',
     [romloader.ROMLOADER_CHIPTYP_NETX50]           = '50',
     [romloader.ROMLOADER_CHIPTYP_NETX10]           = '10'
+--    [romloader.ROMLOADER_CHIPTYP_NETIOLA]          = 'IOL',
+--    [romloader.ROMLOADER_CHIPTYP_NETIOLB]          = 'IOL'
   }
 end
 

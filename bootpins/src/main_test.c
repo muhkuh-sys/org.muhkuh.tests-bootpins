@@ -187,6 +187,8 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	unsigned long ulRDY;
 	unsigned long ulRUN;
 	unsigned long ulStrappingOptions;
+	unsigned long *pulId;
+	CHIPID_T tChipID;
 
 
 	/* Get the current boot mode. */
@@ -204,8 +206,19 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	ulStrappingOptions |= (ulValue & HOSTMSK(sample_at_porn_stat_in1_sqi_sio2)) >> (HOSTSRT(sample_at_porn_stat_in1_sqi_sio2)-2);
 	ptTestParams->ulStrappingOptions = ulStrappingOptions;
 
-	/* Set the chip ID. */
-	ptTestParams->ulChipID = CHIPID_netX90;
+	/* Distinguish netX90 and netX90B. */
+	pulId = (unsigned long*)0x000000c0U;
+	ulValue = *pulId;
+	tChipID = CHIPID_unknown;
+	if( ulValue==0x0010a005 )
+	{
+		tChipID = CHIPID_netX90;
+	}
+	else if( ulValue==0x0010d005 )
+	{
+		tChipID = CHIPID_netX90B;
+	}
+	ptTestParams->ulChipID = tChipID;
 
 
 #elif ASIC_TYP==ASIC_TYP_NETX50
