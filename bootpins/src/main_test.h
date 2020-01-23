@@ -34,6 +34,8 @@ typedef struct BOOTPINS_PARAMETER_STRUCT
 	unsigned long ulBootMode;
 	unsigned long ulStrappingOptions;
 	unsigned long ulChipID;
+	unsigned int  sizUniqueIdInBits;
+	unsigned char aucUniqueID[16];
 } BOOTPINS_PARAMETER_T;
 
 

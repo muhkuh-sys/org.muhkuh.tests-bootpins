@@ -63,18 +63,37 @@ function BootPins:read(tPlugin)
   local aParameter = {
     'OUTPUT',
     'OUTPUT',
+    'OUTPUT',
+    'OUTPUT',
     'OUTPUT'
   }
-  local ulResult = tester.mbin_simple_run(nil, tPlugin, strNetxBinary, aParameter)
+  local ulResult = tester:mbin_simple_run(tPlugin, strNetxBinary, aParameter)
   if ulResult~=0 then
     error('The test failed with return code:' .. ulResult)
+  end
+
+  -- Read the unique ID if there is one.
+  local sizUniqueIdInBits = aParameter[4]
+  local strUniqueId = ''
+  if sizUniqueIdInBits>0 then
+    -- Check for an upper limit.
+    if sizUniqueIdInBits>2048 then
+      error('Cowardly refusing to read more than 2048 bits.')
+    end
+    -- Get the size of the unique ID in bytes.
+    local sizUniqueId = math.ceil(sizUniqueIdInBits / 8)
+
+    -- Read the unique ID.
+    strUniqueId = tester:stdRead(tPlugin, aParameter.ulParameterStartAddress+0x14, sizUniqueId)
   end
 
   local atResult = {
     asic_typ = tAsicTyp,
     boot_mode = aParameter[1],
     strapping_options = aParameter[2],
-    chip_id = aParameter[3]
+    chip_id = aParameter[3],
+    size_of_unique_id_in_bits = sizUniqueIdInBits,
+    unique_id = strUniqueId
   }
 
   return atResult
