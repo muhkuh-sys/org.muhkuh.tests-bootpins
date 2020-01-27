@@ -26,6 +26,9 @@ function TestClassBootpins:_init(strTestName, uiTestCase, tLogWriter, strLogLeve
       constraint('NETX500,NETX100,NETX50,NETX10,NETX51A_NETX50_COMPATIBILITY_MODE,NETX51B_NETX50_COMPATIBILITY_MODE,NETX51A,NETX51B,NETX52A,NETX52B,NETX4000_RELAXED,NETX4000_FULL,NETX4000_SMALL,NETX90_MPW,NETX90,NETX90B'),
 
     P:P('expected_otp_fuses', 'A file defining the expected OTP fuses.'):
+      required(false),
+
+    P:P('uid_blacklist', 'A blacklist for the chip UID. It must contain the exact UID in a line.'):
       required(false)
   }
 end
@@ -78,10 +81,10 @@ end
 
 
 
-function TestClassBootpins:__hexdump(strData)
+function TestClassBootpins:__hexdump_reverse(strData)
   local astrHex = {}
   for uiPos=1,string.len(strData) do
-    table.insert(astrHex, string.format('%02x', string.byte(strData, uiPos)))
+    table.insert(astrHex, -1, string.format('%02x', string.byte(strData, uiPos)))
   end
   return table.concat(astrHex)
 end
@@ -91,6 +94,7 @@ end
 function TestClassBootpins:run()
   local atParameter = self.atParameter
   local tLog = self.tLog
+  local pl = self.pl
 
   ----------------------------------------------------------------------
   --
@@ -117,6 +121,28 @@ function TestClassBootpins:run()
     end
   end
 
+  local atBlacklistLookup = nil
+  local strBlacklistFilename = atParameter['uid_blacklist']:get()
+  if strBlacklistFilename~=nil then
+    atBlacklistLookup = {}
+
+    -- Read the complete file.
+    local strBlacklistData, strError = pl.utils.readfile(strBlacklistFilename, false)
+    if strBlacklistData==nil then
+      tLog.error('Failed to read the blacklist file "%s": %s', strBlacklistFilename, strError)
+      error('Failed to read the blacklist file.')
+    end
+    -- Iterate over all lines.
+    for strLine in pl.stringx.lines(strBlacklistData) do
+      local strItem = pl.stringx.strip(strLine)
+      if atBlacklistLookup[strItem]~=nil then
+        tLog.debug('Dropping double blacklist entry "%s".', strItem)
+      else
+        atBlacklistLookup[strItem] = true
+      end
+    end
+  end
+
   ----------------------------------------------------------------------
   --
   -- Open the connection to the netX.
@@ -134,14 +160,19 @@ function TestClassBootpins:run()
     strDetectedChipId = 'invalid'
   end
 
+  local strUniqueId = nil
+  if aBootPins.size_of_unique_id_in_bits>0 then
+    strUniqueId = self:__hexdump_reverse(aBootPins.unique_id)
+  end
+
   tLog.debug('Detected values:')
   tLog.debug('  boot mode: 0x%08x', aBootPins.boot_mode)
   tLog.debug('  strapping options: 0x%08x', aBootPins.strapping_options)
   tLog.debug('  chip id: %d (%s)', aBootPins.chip_id, strDetectedChipId)
-  if aBootPins.size_of_unique_id_in_bits==0 then
+  if strUniqueId==nil then
     tLog.debug('  no unique ID')
   else
-    tLog.debug('  unique ID: %s', self:__hexdump(aBootPins.unique_id))
+    tLog.debug('  unique ID: %s', strUniqueId)
   end
 
   -- Compare the data with the expected values.
@@ -168,6 +199,14 @@ function TestClassBootpins:run()
     if tAsicTyp==romloader.ROMLOADER_CHIPTYP_NETX4000_RELAXED or tAsicTyp==romloader.ROMLOADER_CHIPTYP_NETX4000_FULL or tAsicTyp==romloader.ROMLOADER_CHIPTYP_NETX4100_SMALL then
       local bootpins_otp = self.BootpinsOTP(tLog)
       bootpins_otp:check(tPlugin, atExpectedOtpFuses)
+    end
+  end
+
+  -- Is the UID part of the blacklist?
+  if strUniqueId~=nil and atBlacklistLookup~=nil then
+    if atBlacklistLookup[strUniqueId]==true then
+      tLog.error('The chip UID is part of the blacklist: %s', strUniqueId)
+      error('The chip is blacklisted.')
     end
   end
 
