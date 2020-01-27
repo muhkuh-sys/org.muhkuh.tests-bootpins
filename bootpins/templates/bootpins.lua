@@ -70,7 +70,11 @@ function BootPins:read(tPlugin)
     'OUTPUT',
     'OUTPUT'
   }
-  local ulResult = tester:mbin_simple_run(tPlugin, strNetxBinary, aParameter)
+  local aAttr = tester:mbin_open(strNetxBinary, tPlugin)
+  tester:mbin_debug(aAttr)
+  tester:mbin_write(tPlugin, aAttr)
+  tester:mbin_set_parameter(tPlugin, aAttr, aParameter)
+  local ulResult = tester:mbin_execute(tPlugin, aAttr, aParameter)
   if ulResult~=0 then
     error('The test failed with return code:' .. ulResult)
   end
@@ -87,7 +91,7 @@ function BootPins:read(tPlugin)
     local sizUniqueId = math.ceil(sizUniqueIdInBits / 8)
 
     -- Read the unique ID.
-    strUniqueId = tester:stdRead(tPlugin, aParameter.ulParameterStartAddress+0x14, sizUniqueId)
+    strUniqueId = tester:stdRead(tPlugin, aAttr.ulParameterStartAddress+0x0c+0x10, sizUniqueId)
   end
 
   local atResult = {

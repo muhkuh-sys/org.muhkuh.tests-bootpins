@@ -104,9 +104,9 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	/* Copy the unique ID. */
 	ulValue = ptRAPSysctrlArea->aulRAP_SYSCTRL_OTP_CONFIG_[1];
 	ptTestParams->sizUniqueIdInBits = 16;
-	memset(ptTestParams->aucUniqueID, 0, sizeof(ptTestParams->aucUniqueID));
-	ptTestParams->aucUniqueID[0] = (unsigned char)( ulValue         & 0x000000ffU);
-	ptTestParams->aucUniqueID[1] = (unsigned char)((ulValue >>  8U) & 0x000000ffU);
+	memset(ptTestParams->tUniqueID.auc, 0, sizeof(ptTestParams->tUniqueID));
+	ptTestParams->tUniqueID.auc[0] = (unsigned char)((ulValue & MSK_NX4000_RAP_SYSCTRL_OTP_CONFIG_1_FUSE_122) >> SRT_NX4000_RAP_SYSCTRL_OTP_CONFIG_1_FUSE_122);
+	ptTestParams->tUniqueID.auc[1] = (unsigned char)((ulValue & MSK_NX4000_RAP_SYSCTRL_OTP_CONFIG_1_FUSE_123) >> SRT_NX4000_RAP_SYSCTRL_OTP_CONFIG_1_FUSE_123);
 
 
 #elif ASIC_TYP==ASIC_TYP_NETX500
@@ -145,7 +145,7 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 
 	/* The netX500/100 has no unique chip ID. */
 	ptTestParams->sizUniqueIdInBits = 0;
-	memset(ptTestParams->aucUniqueID, 0, sizeof(ptTestParams->aucUniqueID));
+	memset(ptTestParams->tUniqueID.auc, 0, sizeof(ptTestParams->tUniqueID));
 
 
 #elif ASIC_TYP==ASIC_TYP_NETX90_MPW
@@ -177,11 +177,12 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 
 	/* The netX90MPW has no unique chip ID. */
 	ptTestParams->sizUniqueIdInBits = 0;
-	memset(ptTestParams->aucUniqueID, 0, sizeof(ptTestParams->aucUniqueID));
+	memset(ptTestParams->tUniqueID.auc, 0, sizeof(ptTestParams->tUniqueID));
 
 
 #elif ASIC_TYP==ASIC_TYP_NETX90
 	HOSTDEF(ptAsicCtrlComArea);
+	HOSTDEF(ptAsicCtrlArea);
 	HOSTDEF(ptSampleAtPornStatArea);
 	unsigned long ulValue;
 	unsigned long ulRDY;
@@ -220,6 +221,13 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	}
 	ptTestParams->ulChipID = tChipID;
 
+	/* Copy the unique ID. */
+	ptTestParams->sizUniqueIdInBits = sizeof(ptAsicCtrlArea->aulAsic_ctrl_netx_unique_id) * 8U;
+	memset(ptTestParams->tUniqueID.auc, 0, sizeof(ptTestParams->tUniqueID));
+	ptTestParams->tUniqueID.aul[0] = ptAsicCtrlArea->aulAsic_ctrl_netx_unique_id[0];
+	ptTestParams->tUniqueID.aul[1] = ptAsicCtrlArea->aulAsic_ctrl_netx_unique_id[1];
+	ptTestParams->tUniqueID.aul[2] = ptAsicCtrlArea->aulAsic_ctrl_netx_unique_id[2];
+
 
 #elif ASIC_TYP==ASIC_TYP_NETX50
 	HOSTDEF(ptNetxControlledGlobalRegisterBlock1Area);
@@ -244,7 +252,7 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 
 	/* The netX50 has no unique chip ID. */
 	ptTestParams->sizUniqueIdInBits = 0;
-	memset(ptTestParams->aucUniqueID, 0, sizeof(ptTestParams->aucUniqueID));
+	memset(ptTestParams->tUniqueID.auc, 0, sizeof(ptTestParams->tUniqueID));
 
 
 #elif ASIC_TYP==ASIC_TYP_NETX56
@@ -322,7 +330,7 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 
 	/* The netX56 has no unique chip ID. */
 	ptTestParams->sizUniqueIdInBits = 0;
-	memset(ptTestParams->aucUniqueID, 0, sizeof(ptTestParams->aucUniqueID));
+	memset(ptTestParams->tUniqueID.auc, 0, sizeof(ptTestParams->tUniqueID));
 
 
 #elif ASIC_TYP==ASIC_TYP_NETX10
@@ -360,7 +368,7 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 
 	/* The netX10 has no unique chip ID. */
 	ptTestParams->sizUniqueIdInBits = 0;
-	memset(ptTestParams->aucUniqueID, 0, sizeof(ptTestParams->aucUniqueID));
+	memset(ptTestParams->tUniqueID.auc, 0, sizeof(ptTestParams->tUniqueID));
 #else
 #       error "Unknown ASIC_TYP!"
 #endif

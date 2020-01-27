@@ -30,13 +30,19 @@ typedef enum CHIPID_ENUM
 #define SRT_BOOTMODE_RUN 1
 
 
+typedef union UNIQUE_ID_UNION
+{
+	unsigned char auc[16];
+	unsigned long aul[16/sizeof(unsigned long)];
+} UNIQUE_ID_T;
+
 typedef struct BOOTPINS_PARAMETER_STRUCT
 {
 	unsigned long ulBootMode;
 	unsigned long ulStrappingOptions;
 	unsigned long ulChipID;
 	unsigned int  sizUniqueIdInBits;
-	unsigned char aucUniqueID[16];
+	UNIQUE_ID_T tUniqueID;
 } BOOTPINS_PARAMETER_T;
 
 

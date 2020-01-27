@@ -78,6 +78,16 @@ end
 
 
 
+function TestClassBootpins:__hexdump(strData)
+  local astrHex = {}
+  for uiPos=1,string.len(strData) do
+    table.insert(astrHex, string.format('%02x', string.byte(strData, uiPos)))
+  end
+  return table.concat(astrHex)
+end
+
+
+
 function TestClassBootpins:run()
   local atParameter = self.atParameter
   local tLog = self.tLog
@@ -128,6 +138,11 @@ function TestClassBootpins:run()
   tLog.debug('  boot mode: 0x%08x', aBootPins.boot_mode)
   tLog.debug('  strapping options: 0x%08x', aBootPins.strapping_options)
   tLog.debug('  chip id: %d (%s)', aBootPins.chip_id, strDetectedChipId)
+  if aBootPins.size_of_unique_id_in_bits==0 then
+    tLog.debug('  no unique ID')
+  else
+    tLog.debug('  unique ID: %s', self:__hexdump(aBootPins.unique_id))
+  end
 
   -- Compare the data with the expected values.
   local fOk = true
