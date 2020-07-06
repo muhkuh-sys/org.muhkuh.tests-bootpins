@@ -155,5 +155,5 @@ atCopy = {
     'targets/testbench/lua/bootpins.lua':                          bootpins_lua,
     'targets/testbench/lua/bootpins_otp.lua':                      'lua/bootpins_otp.lua'
 }
-for strPathDst, strPathSrc in atCopy.iteritems():
+for strPathDst, strPathSrc in atCopy.items():
     Command(strPathDst, strPathSrc, Copy("$TARGET", "$SOURCE"))
