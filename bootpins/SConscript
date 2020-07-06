@@ -55,7 +55,7 @@ def build_bootpins(tBaseEnv, strID, strLdFile):
 
     return tBin, tElf
 
-bootpins_netx4000, tElf_netx4000 = build_bootpins(atEnv.NETX4000_RELAXED, 'netx4000', 'src/netx4000/netx4000_cr7_llram.ld')
+bootpins_netx4000, tElf_netx4000 = build_bootpins(atEnv.NETX4000, 'netx4000', 'src/netx4000/netx4000_cr7_llram.ld')
 bootpins_netx500, tElf_netx500 = build_bootpins(atEnv.NETX500, 'netx500', 'src/netx500/netx500.ld')
 bootpins_netx90_mpw, tElf_netx90_mpw = build_bootpins(atEnv.NETX90_MPW, 'netx90_mpw', 'src/netx90/netx90.ld')
 bootpins_netx90, tElf_netx90 = build_bootpins(atEnv.NETX90, 'netx90', 'src/netx90/netx90.ld')
