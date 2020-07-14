@@ -84,7 +84,7 @@ end
 function TestClassBootpins:__hexdump_reverse(strData)
   local astrHex = {}
   for uiPos=1,string.len(strData) do
-    table.insert(astrHex, -1, string.format('%02x', string.byte(strData, uiPos)))
+    table.insert(astrHex, 1, string.format('%02x', string.byte(strData, uiPos)))
   end
   return table.concat(astrHex)
 end
