@@ -99,8 +99,8 @@ tDoc = atEnv.DEFAULT.Asciidoc('targets/doc/org.muhkuh.tests.bootpins.html', 'REA
 #
 # Build the artifact.
 #
-strGroup = 'org.muhkuh.tests'
-strModule = 'bootpins'
+strGroup = PROJECT_GROUP
+strModule = PROJECT_MODULE
 
 # Split the group by dots.
 aGroup = strGroup.split('.')
