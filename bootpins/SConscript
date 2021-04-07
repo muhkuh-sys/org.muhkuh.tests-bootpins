@@ -46,6 +46,7 @@ aCppPath = ['src', '#platform/src', '#platform/src/lib', '#targets/version']
 
 def build_bootpins(tBaseEnv, strID, strLdFile):
     tEnv = tBaseEnv.Clone()
+    tEnv.CompileDb(os.path.join('targets', strID, 'compile_commands.json'))
     tEnv.Replace(LDFILE = strLdFile)
     tEnv.Append(CPPPATH = aCppPath)
     tSrc = tEnv.SetBuildPath(os.path.join('targets', strID), 'src', sources)
