@@ -5,6 +5,8 @@ local TestClassBootpins = class(TestClass)
 function TestClassBootpins:_init(strTestName, uiTestCase, tLogWriter, strLogLevel)
   self:super(strTestName, uiTestCase, tLogWriter, strLogLevel)
 
+  self.json = require 'dkjson'
+
   local BootPins = require 'bootpins'
   self.bootpins = BootPins()
   self.BootpinsOTP = require 'bootpins_otp'
@@ -12,6 +14,9 @@ function TestClassBootpins:_init(strTestName, uiTestCase, tLogWriter, strLogLeve
   local P = self.P
   self:__parameter {
     P:P('plugin', 'A pattern for the plugin to use.'):
+      required(false),
+
+    P:P('plugin_options', 'Plugin options as a JSON object.'):
       required(false),
 
     P:U32('expected_boot_mode', 'The expected boot mode.'):
@@ -94,6 +99,7 @@ end
 function TestClassBootpins:run()
   local atParameter = self.atParameter
   local tLog = self.tLog
+  local json = self.json
   local pl = self.pl
 
   ----------------------------------------------------------------------
@@ -101,6 +107,7 @@ function TestClassBootpins:run()
   -- Parse the parameters and collect all options.
   --
   local strPluginPattern = atParameter['plugin']:get()
+  local strPluginOptions = atParameter['plugin_options']:get()
 
   local ulExpectedBootMode         = atParameter["expected_boot_mode"]:get()
   local ulExpectedStrappingOptions = atParameter["expected_strapping_options"]:get()
@@ -148,7 +155,16 @@ function TestClassBootpins:run()
   -- Open the connection to the netX.
   -- (or re-use an existing connection.)
   --
-  local tPlugin = tester:getCommonPlugin(strPluginPattern)
+  local atPluginOptions = {}
+  if strPluginOptions~=nil then
+    local tJson, uiPos, strJsonErr = json.decode(strPluginOptions)
+    if tJson==nil then
+      tLog.warning('Ignoring invalid plugin options. Error parsing the JSON: %d %s', uiPos, strJsonErr)
+    else
+      atPluginOptions = tJson
+    end
+  end
+  local tPlugin = _G.tester:getCommonPlugin(strPluginPattern, atPluginOptions)
   if tPlugin==nil then
     error("No plug-in selected, nothing to do!")
   end
