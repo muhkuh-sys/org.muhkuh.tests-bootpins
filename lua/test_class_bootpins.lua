@@ -20,10 +20,9 @@ function TestClassBootpins:_init(strTestName, uiTestCase, tLogWriter, strLogLeve
       required(false),
 
     P:U32('expected_boot_mode', 'The expected boot mode.'):
-      required(true),
+      required(false),
 
     P:U32('expected_strapping_options', 'The expected strapping options.'):
-      default(0):
       required(false),
 
     P:SC('expected_chip_id', 'The expected chip ID.'):
@@ -193,11 +192,11 @@ function TestClassBootpins:run()
 
   -- Compare the data with the expected values.
   local fOk = true
-  if ulExpectedBootMode~=aBootPins.boot_mode then
+  if ulExpectedBootMode~=nil and ulExpectedBootMode~=aBootPins.boot_mode then
     tLog.error('The expected boot mode is 0x%08x, but 0x%08x was detected.', ulExpectedBootMode, aBootPins.boot_mode)
     fOk = false
   end
-  if ulExpectedStrappingOptions~=aBootPins.strapping_options then
+  if ulExpectedStrappingOptions~=nil and ulExpectedStrappingOptions~=aBootPins.strapping_options then
     tLog.error('The expected strapping options are 0x%08x, but 0x%08x was detected.', ulExpectedStrappingOptions, aBootPins.strapping_options)
     fOk = false
   end
