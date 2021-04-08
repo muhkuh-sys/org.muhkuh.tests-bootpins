@@ -51,16 +51,16 @@ function TestClassBootpins:read_otp_fuse_definition(strFile)
     fOK = false
   else
     repeat
-      strLine = tFile:read('*l')
+      local strLine = tFile:read('*l')
       if strLine~=nil then
         strLine = self.pl.stringx.strip(strLine)
         if strLine~='' and string.sub(strLine, 1)~='#' then
-          strName, strValue = string.match(strLine, '^([^%s]+)%s*=%s*([%xx]+)')
+          local strName, strValue = string.match(strLine, '^([^%s]+)%s*=%s*([%xx]+)')
           if strName==nil then
             tLog.error('Failed to parse line: "%s"', strLine)
             fOK = false
           else
-            ulValue = tonumber(strValue)
+            local ulValue = tonumber(strValue)
             if ulValue==nil then
               tLog.error('Failed to parse the value in this line: "%s"', strLine)
               fOK = false
@@ -211,7 +211,7 @@ function TestClassBootpins:run()
   -- On the netX4000, read and compare the OTP fuses.
   if atExpectedOtpFuses~=nil then
     local tAsicTyp = tPlugin:GetChiptyp()
-    if tAsicTyp==romloader.ROMLOADER_CHIPTYP_NETX4000_RELAXED or tAsicTyp==romloader.ROMLOADER_CHIPTYP_NETX4000_FULL or tAsicTyp==romloader.ROMLOADER_CHIPTYP_NETX4100_SMALL then
+    if tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4000_RELAXED or tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4000_FULL or tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4100_SMALL then
       local bootpins_otp = self.BootpinsOTP(tLog)
       bootpins_otp:check(tPlugin, atExpectedOtpFuses)
     end

@@ -50,10 +50,10 @@ function BootpinsOTP:check(tPlugin, atExpectedValues)
 --  local tester = require 'tester_cli'
 
   -- Read the chip ID.
-  local strChipID = tPlugin:read_image(0xf80000b0, 0x10, tester.callback_progress, 0x10)
+  local strChipID = tPlugin:read_image(0xf80000b0, 0x10, _G.tester.callback_progress, 0x10)
 
   -- Read all OTP fuses.
-  local strOTPFuses = tPlugin:read_image(0xf80000c0, 0x28, tester.callback_progress, 0x28)
+  local strOTPFuses = tPlugin:read_image(0xf80000c0, 0x28, _G.tester.callback_progress, 0x28)
 
   -- Parse the chip ID.
   local strChipIDFormat = [[
@@ -144,7 +144,7 @@ ulSecMode:u1
 
 
   -- Be optimistic.
-  fOK = true
+  local fOK = true
 
   -- Check all protection fields.
   local atProtection = {
