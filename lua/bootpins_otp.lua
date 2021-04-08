@@ -46,8 +46,9 @@ end
 
 
 
-function BootpinsOTP:check(tPlugin, atExpectedValues)
+function BootpinsOTP:check(tPlugin, atExpectedValues, strExpectedOtpFusesFile)
 --  local tester = require 'tester_cli'
+  local tLog = self.tLog
 
   -- Read the chip ID.
   local strChipID = tPlugin:read_image(0xf80000b0, 0x10, _G.tester.callback_progress, 0x10)
@@ -164,19 +165,19 @@ ulSecMode:u1
 
     if ulOverride~=nil then
       if ulProtection==ulOverride then
-        self.tLog.debug('Field "%s" ok (override)', strTestName)
+        tLog.debug('Field "%s" ok (override)', strTestName)
       else
-        self.tLog.error('Field "%s" failed (override).', strTestName)
-        self.tLog.debug('  Protection: 0x%08x,  Override: 0x%08x', ulProtection, ulOverride)
+        tLog.error('Field "%s" failed (override).', strTestName)
+        tLog.debug('  Protection: 0x%08x,  Override: 0x%08x', ulProtection, ulOverride)
         fOK = false
       end
 
     else
       if ulProtection==ulCalculated then
-        self.tLog.debug('Field "%s" ok', strTestName)
+        tLog.debug('Field "%s" ok', strTestName)
       else
-        self.tLog.error('Field "%s" failed.', strTestName)
-        self.tLog.debug('Protection: 0x%08x,  Expected: 0x%08x', ulProtection, ulCalculated)
+        tLog.error('Field "%s" failed.', strTestName)
+        tLog.debug('Protection: 0x%08x,  Expected: 0x%08x', ulProtection, ulCalculated)
         fOK = false
       end
     end
@@ -198,15 +199,17 @@ ulSecMode:u1
 
       -- The current element must be a table.
       if type(tElem)~='table' then
-        self.tLog.error('The path "%s" does not point to a table.', strPathCnt)
-        error('Invalid path in OTP definition.')
+        local strError = string.format('Invalid path in OTP definition "%s". The path "%s" does not point to a table.', strExpectedOtpFusesFile, strPathCnt)
+        tLog.error(strError)
+        error(strError)
       end
 
       -- Does the new path element exist on the current level?
       local tNewElem = tElem[strPath]
       if tNewElem==nil then
-        self.tLog.error('The path "%s" does not exist.', strPathCnt)
-        error('Invalid path in OTP definition.')
+        local strError = string.format('Invalid path in OTP definition "%s". The path "%s" does not exist.', strExpectedOtpFusesFile, strPathCnt)
+        tLog.error(strError)
+        error(strError)
       end
 
       -- Accept the new path.
@@ -215,21 +218,24 @@ ulSecMode:u1
 
     -- The complete path must point to a number.
     if type(tElem)~='number' then
-      self.tLog.error('The path "%s" does not point to a number.', strKey)
-      error('Invalid path in OTP definition.')
+      local strError = string.format('Invalid path in OTP definition "%s". The path "%s" does not point to a number.', strExpectedOtpFusesFile, strKey)
+      tLog.error(strError)
+      error(strError)
     end
     local ulValueIs = tElem
 
     if ulValueIs==ulValueExpected then
-      self.tLog.debug('Comparing path %s = %s -> OK', strKey, ulValueExpected)
+      tLog.debug('Comparing path %s = %s -> OK', strKey, ulValueExpected)
     else
-      self.tLog.error('The path %s has the value 0x%08x, but 0x%08x was expected.', strKey, ulValueIs, ulValueExpected)
+      tLog.error('The path %s has the value 0x%08x, but 0x%08x was expected.', strKey, ulValueIs, ulValueExpected)
       fOK = false
     end
   end
 
   if fOK~=true then
-    error('The OTP fuses do not match the definition.')
+    local strError = string.format('The OTP fuses in the chip differ from the definition in the file "%s".', strExpectedOtpFusesFile)
+    tLog.error(strError)
+    error(strError)
   end
 end
 

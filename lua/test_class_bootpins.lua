@@ -122,8 +122,9 @@ function TestClassBootpins:run()
     -- Read the OTP fuse definition line by line.
     atExpectedOtpFuses = self:read_otp_fuse_definition(strExpectedOtpFusesFile)
     if atExpectedOtpFuses==nil then
-      tLog.error('Failed to parse the OTP fuse definition in "%s".', strExpectedOtpFusesFile)
-      error('Failed to parse the OTP fuse definition.')
+      local strError = string.format('Failed to parse the OTP fuse definition in "%s".', strExpectedOtpFusesFile)
+      tLog.error(strError)
+      error(strError)
     end
   end
 
@@ -135,8 +136,9 @@ function TestClassBootpins:run()
     -- Read the complete file.
     local strBlacklistData, strError = pl.utils.readfile(strBlacklistFilename, false)
     if strBlacklistData==nil then
-      tLog.error('Failed to read the blacklist file "%s": %s', strBlacklistFilename, strError)
-      error('Failed to read the blacklist file.')
+      local strError = string.format('Failed to read the blacklist file "%s": %s', strBlacklistFilename, strError)
+      tLog.error(strError)
+      error(strError)
     end
     -- Iterate over all lines.
     for strLine in pl.stringx.lines(strBlacklistData) do
@@ -165,7 +167,8 @@ function TestClassBootpins:run()
   end
   local tPlugin = _G.tester:getCommonPlugin(strPluginPattern, atPluginOptions)
   if tPlugin==nil then
-    error("No plug-in selected, nothing to do!")
+    local strError = string.format('Failed to establish a connection to the netX with pattern "%s" and options "%s".', strPluginPattern, atPluginOptions)
+    error(strError)
   end
 
   -- Read the bootpins.
@@ -192,20 +195,25 @@ function TestClassBootpins:run()
 
   -- Compare the data with the expected values.
   local fOk = true
+  local astrErrors = { 'The detected values do not match the expected data:' }
+  if ulExpectedChipId~=aBootPins.chip_id then
+    local strError = string.format('The expected chip ID is %d (%s), but %d (%s) was detected.', ulExpectedChipId, strExpectedChipId, aBootPins.chip_id, strDetectedChipId)
+    table.insert(astrErrors, strError)
+    fOk = false
+  end
   if ulExpectedBootMode~=nil and ulExpectedBootMode~=aBootPins.boot_mode then
-    tLog.error('The expected boot mode is 0x%08x, but 0x%08x was detected.', ulExpectedBootMode, aBootPins.boot_mode)
+    local strError = string.format('The expected boot mode is 0x%08x, but 0x%08x was detected.', ulExpectedBootMode, aBootPins.boot_mode)
+    tLog.error(strError)
+    table.insert(astrErrors, strError)
     fOk = false
   end
   if ulExpectedStrappingOptions~=nil and ulExpectedStrappingOptions~=aBootPins.strapping_options then
-    tLog.error('The expected strapping options are 0x%08x, but 0x%08x was detected.', ulExpectedStrappingOptions, aBootPins.strapping_options)
-    fOk = false
-  end
-  if ulExpectedChipId~=aBootPins.chip_id then
-    tLog.error('The expected chip ID is %d (%s), but %d (%s) was detected.', ulExpectedChipId, strExpectedChipId, aBootPins.chip_id, strDetectedChipId)
+    local strError = string.format('The expected strapping options are 0x%08x, but 0x%08x was detected.', ulExpectedStrappingOptions, aBootPins.strapping_options)
+    table.insert(astrErrors, strError)
     fOk = false
   end
   if fOk~=true then
-    error('The detected values do not match the expected data.')
+    error(table.concat(astrErrors, '\n'))
   end
 
   -- On the netX4000, read and compare the OTP fuses.
@@ -213,15 +221,16 @@ function TestClassBootpins:run()
     local tAsicTyp = tPlugin:GetChiptyp()
     if tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4000_RELAXED or tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4000_FULL or tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4100_SMALL then
       local bootpins_otp = self.BootpinsOTP(tLog)
-      bootpins_otp:check(tPlugin, atExpectedOtpFuses)
+      bootpins_otp:check(tPlugin, atExpectedOtpFuses, strExpectedOtpFusesFile)
     end
   end
 
   -- Is the UID part of the blacklist?
   if strUniqueId~=nil and atBlacklistLookup~=nil then
     if atBlacklistLookup[strUniqueId]==true then
-      tLog.error('The chip UID is part of the blacklist: %s', strUniqueId)
-      error('The chip is blacklisted.')
+      local strError = string.format('The chip UID %s is part of the blacklist.', strUniqueId)
+      tLog.error(strError)
+      error(strError)
     end
   end
 
