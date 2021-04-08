@@ -10,6 +10,58 @@
 
 /*-----------------------------------*/
 
+#if ASIC_TYP==ASIC_TYP_NETX90
+#define NETX90_PHY_VERSION_2 0x01011492
+#define NETX90_PHY_VERSION_3 0x01011493
+
+static unsigned long read_phy_register(unsigned long ulPhy, unsigned long ulRegister)
+{
+	HOSTDEF(ptXc0PhyCtrl0Area);
+	unsigned long ulValue;
+
+
+	/* Run a read operation. */
+	ulValue  =         1U << HOSTSRT(int_phy_ctrl_miimu_snrdy);
+	ulValue |=         1U << HOSTSRT(int_phy_ctrl_miimu_preamble);
+	ulValue |=         0U << HOSTSRT(int_phy_ctrl_miimu_opmode);
+	ulValue |=         0U << HOSTSRT(int_phy_ctrl_miimu_mdc_period);
+	ulValue |=         1U << HOSTSRT(int_phy_ctrl_miimu_rta);
+	ulValue |= ulRegister << HOSTSRT(int_phy_ctrl_miimu_regaddr);
+	ulValue |=      ulPhy << HOSTSRT(int_phy_ctrl_miimu_phyaddr);
+	ulValue |=         0U << HOSTSRT(int_phy_ctrl_miimu_data);
+	ptXc0PhyCtrl0Area->ulInt_phy_ctrl_miimu = ulValue;
+
+	/* Wait until the snrdy bit is 0. */
+	do
+	{
+		ulValue  = ptXc0PhyCtrl0Area->ulInt_phy_ctrl_miimu;
+	} while( (ulValue&HOSTMSK(int_phy_ctrl_miimu_snrdy))!=0 );
+
+	/* Extract the data from the result. */
+	ulValue = (ulValue & HOSTMSK(int_phy_ctrl_miimu_data)) >> HOSTSRT(int_phy_ctrl_miimu_data);
+
+	return ulValue;
+}
+
+
+static unsigned long get_phy_revision(void)
+{
+	unsigned long ulValue;
+
+
+	/* Read the PHY version.
+	 * The version is split over 2 registers. Register 2 has the "high" part
+	 * and register 3 has the "low" part.
+	 */
+	ulValue  = read_phy_register(0, 2) << 16U;
+	ulValue |= read_phy_register(0, 3);
+
+	return ulValue;
+}
+#endif
+
+/*-----------------------------------*/
+
 #if ASIC_TYP==ASIC_TYP_NETX500 || ASIC_TYP==ASIC_TYP_NETX50
 //-------------------------------------
 // some defines for the mysterious HIF registers
@@ -207,7 +259,7 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	ulStrappingOptions |= (ulValue & HOSTMSK(sample_at_porn_stat_in1_sqi_sio2)) >> (HOSTSRT(sample_at_porn_stat_in1_sqi_sio2)-2);
 	ptTestParams->ulStrappingOptions = ulStrappingOptions;
 
-	/* Distinguish netX90 and netX90B. */
+	/* Distinguish netX90, netX90B and netX90BPhyR3. */
 	pulId = (unsigned long*)0x000000c0U;
 	ulValue = *pulId;
 	tChipID = CHIPID_unknown;
@@ -217,7 +269,16 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	}
 	else if( ulValue==0x0010d005 )
 	{
-		tChipID = CHIPID_netX90B;
+		/* Get the PHY revision. */
+		ulValue = get_phy_revision();
+		if( ulValue==NETX90_PHY_VERSION_2 )
+		{
+			tChipID = CHIPID_netX90B;
+		}
+		else if( ulValue==NETX90_PHY_VERSION_3 )
+		{
+			tChipID = CHIPID_netX90BPhyR3;
+		}
 	}
 	ptTestParams->ulChipID = tChipID;
 

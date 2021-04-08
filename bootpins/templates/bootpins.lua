@@ -21,7 +21,8 @@ function BootPins:_init()
     ['NETX4000_SMALL']                     = ${CHIPID_netX4000_SMALL},
     ['NETX90_MPW']                         = ${CHIPID_netX90_MPW},
     ['NETX90']                             = ${CHIPID_netX90},
-    ['NETX90B']                            = ${CHIPID_netX90B}
+    ['NETX90B']                            = ${CHIPID_netX90B},
+    ['NETX90BPHYR3']                       = ${CHIPID_netX90BPhyR3}
   }
   self.atChipID = atChipID
 
