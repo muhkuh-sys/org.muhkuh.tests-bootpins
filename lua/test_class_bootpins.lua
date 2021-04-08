@@ -234,6 +234,14 @@ function TestClassBootpins:run()
     end
   end
 
+  -- Log the UID if it is available.
+  if strUniqueId~=nil then
+    _G.tester:sendLogEvent('muhkuh.attribute.chipid', {
+      chipid = strDetectedChipId,
+      uid = strUniqueId
+    })
+  end
+
   print("")
   print(" #######  ##    ## ")
   print("##     ## ##   ##  ")
