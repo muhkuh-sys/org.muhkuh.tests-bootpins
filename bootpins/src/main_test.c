@@ -11,8 +11,156 @@
 /*-----------------------------------*/
 
 #if ASIC_TYP==ASIC_TYP_NETX90
+#define NETX90_PHY_VERSION_INVALID 0x00000000
 #define NETX90_PHY_VERSION_2 0x01011492
 #define NETX90_PHY_VERSION_3 0x01011493
+
+
+static int enableClocks(void)
+{
+	HOSTDEF(ptAsicCtrlArea);
+	int iResult;
+	unsigned long ulMask;
+	unsigned long ulEnable;
+	unsigned long ulValue;
+
+
+	/* Be pessimistic. */
+	iResult = -1;
+
+	/* Check if all necessary clocks can be enabled. */
+	ulMask = HOSTMSK(clock_enable0_mask_xc_misc);
+	ulEnable  = HOSTMSK(clock_enable0_xc_misc);
+#if ASIC_TYP==ASIC_TYP_NETX90
+	ulEnable |= HOSTMSK(clock_enable0_xc_misc_wm);
+#endif
+	ulMask |= HOSTMSK(clock_enable0_mask_xmac0);
+	ulMask |= HOSTMSK(clock_enable0_mask_tpec0);
+	ulMask |= HOSTMSK(clock_enable0_mask_rpec0);
+
+	ulEnable |= HOSTMSK(clock_enable0_xmac0);
+	ulEnable |= HOSTMSK(clock_enable0_tpec0);
+	ulEnable |= HOSTMSK(clock_enable0_rpec0);
+#if ASIC_TYP==ASIC_TYP_NETX90
+	ulEnable |= HOSTMSK(clock_enable0_xmac0_wm);
+	ulEnable |= HOSTMSK(clock_enable0_tpec0_wm);
+	ulEnable |= HOSTMSK(clock_enable0_rpec0_wm);
+#endif
+
+	ulValue  = ptAsicCtrlArea->asClock_enable[0].ulMask;
+	ulValue &= ulMask;
+	ulValue ^= ulMask;
+	if( ulValue!=0U )
+	{
+		uprintf("The Ethernet clocks are masked out.\n");
+	}
+	else
+	{
+		/* Enable the clocks. */
+		ulValue  = ptAsicCtrlArea->asClock_enable[0].ulEnable;
+		ulValue |= ulEnable;
+		ptAsicCtrlArea->ulAsic_ctrl_access_key = ptAsicCtrlArea->ulAsic_ctrl_access_key;  /* @suppress("Assignment to itself") */
+		ptAsicCtrlArea->asClock_enable[0].ulEnable = ulValue;
+
+		iResult = 0;
+	}
+
+	return iResult;
+}
+
+
+
+static void setup_phy_internal(void)
+{
+	HOSTDEF(ptAsicCtrlArea);
+	HOSTDEF(ptIntPhyCfgComArea);
+	unsigned long ulValue;
+	unsigned long ulXmMiiCfg;
+	unsigned long ulXcMdioCfg;
+	unsigned long ulPhyCtrl;
+
+
+	/* Connect to internal PHY. */
+	ulXmMiiCfg = 8U;
+	ulXcMdioCfg = 2U;
+	ulPhyCtrl = HOSTDFLT(phy_ctrl0);
+
+	/* Disable LVDS connections. */
+	ulValue  = ulXmMiiCfg << HOSTSRT(io_config0_sel_xm0_mii_cfg);
+#if ASIC_TYP==ASIC_TYP_NETX90
+	ulValue |= HOSTMSK(io_config0_sel_xm0_mii_cfg_wm);
+#endif
+	ulValue |= ulXcMdioCfg << HOSTSRT(io_config0_sel_xc0_mdio);
+#if ASIC_TYP==ASIC_TYP_NETX90
+	ulValue |= HOSTMSK(io_config0_sel_xc0_mdio_wm);
+#endif
+	ptAsicCtrlArea->ulAsic_ctrl_access_key = ptAsicCtrlArea->ulAsic_ctrl_access_key;  /* @suppress("Assignment to itself") */
+	ptAsicCtrlArea->asIo_config[0].ulConfig = ulValue;
+
+	ulValue  = ulXmMiiCfg << HOSTSRT(io_config1_sel_xm1_mii_cfg);
+#if ASIC_TYP==ASIC_TYP_NETX90
+	ulValue |= HOSTMSK(io_config1_sel_xm1_mii_cfg_wm);
+#endif
+	ulValue |= ulXcMdioCfg << HOSTSRT(io_config1_sel_xc1_mdio);
+#if ASIC_TYP==ASIC_TYP_NETX90
+	ulValue |= HOSTMSK(io_config1_sel_xc1_mdio_wm);
+#endif
+	ptAsicCtrlArea->ulAsic_ctrl_access_key = ptAsicCtrlArea->ulAsic_ctrl_access_key;  /* @suppress("Assignment to itself") */
+	ptAsicCtrlArea->asIo_config[1].ulConfig = ulValue;
+
+	ptAsicCtrlArea->ulAsic_ctrl_access_key = ptAsicCtrlArea->ulAsic_ctrl_access_key;  /* @suppress("Assignment to itself") */
+	ptAsicCtrlArea->ulPhy_ctrl0 = ulPhyCtrl;
+
+	ulValue  = 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_address);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_mode);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_fxmode);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_automdix);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_np_msg_code);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_enable);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_mode);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_fxmode);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_automdix);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_np_msg_code);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_enable);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_reset);
+	ptIntPhyCfgComArea->ulInt_phy_cfg_phy_ctrl = ulValue;
+
+	systime_delay_ms(100);
+
+	ulValue  = 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_address);
+	ulValue |= 7U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_mode);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_fxmode);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_automdix);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_np_msg_code);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_enable);
+	ulValue |= 7U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_mode);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_fxmode);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_automdix);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_np_msg_code);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_enable);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_reset);
+	ptIntPhyCfgComArea->ulInt_phy_cfg_phy_ctrl = ulValue;
+
+	systime_delay_ms(100);
+
+	ulValue  = 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_address);
+	ulValue |= 7U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_mode);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_fxmode);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_automdix);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_np_msg_code);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_enable);
+	ulValue |= 7U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_mode);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_fxmode);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_automdix);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_np_msg_code);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_enable);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_reset);
+	ptIntPhyCfgComArea->ulInt_phy_cfg_phy_ctrl = ulValue;
+
+	systime_delay_ms(100);
+}
+
+
 
 static unsigned long read_phy_register(unsigned long ulPhy, unsigned long ulRegister)
 {
@@ -46,15 +194,26 @@ static unsigned long read_phy_register(unsigned long ulPhy, unsigned long ulRegi
 
 static unsigned long get_phy_revision(void)
 {
+	int iResult;
 	unsigned long ulValue;
 
 
-	/* Read the PHY version.
-	 * The version is split over 2 registers. Register 2 has the "high" part
-	 * and register 3 has the "low" part.
-	 */
-	ulValue  = read_phy_register(0, 2) << 16U;
-	ulValue |= read_phy_register(0, 3);
+	iResult = enableClocks();
+	if( iResult!=0 )
+	{
+		ulValue = NETX90_PHY_VERSION_INVALID;
+	}
+	else
+	{
+		setup_phy_internal();
+
+		/* Read the PHY version.
+		* The version is split over 2 registers. Register 2 has the "high" part
+		* and register 3 has the "low" part.
+		*/
+		ulValue  = read_phy_register(0, 2) << 16U;
+		ulValue |= read_phy_register(0, 3);
+	}
 
 	return ulValue;
 }
