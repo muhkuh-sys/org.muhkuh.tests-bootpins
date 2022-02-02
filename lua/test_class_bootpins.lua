@@ -167,7 +167,8 @@ function TestClassBootpins:run()
   end
   local tPlugin = _G.tester:getCommonPlugin(strPluginPattern, atPluginOptions)
   if tPlugin==nil then
-    local strError = string.format('Failed to establish a connection to the netX with pattern "%s" and options "%s".', strPluginPattern, atPluginOptions)
+    local strPluginOptions = pl.pretty.write(atPluginOptions)
+    local strError = string.format('Failed to establish a connection to the netX with pattern "%s" and options "%s".', strPluginPattern, strPluginOptions)
     error(strError)
   end
 
