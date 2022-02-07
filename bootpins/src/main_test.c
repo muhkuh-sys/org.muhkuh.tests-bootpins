@@ -15,6 +15,9 @@
 #define NETX90_PHY_VERSION_2 0x01011492
 #define NETX90_PHY_VERSION_3 0x01011493
 
+#define NETX90_VERSIONREG_REV0 0x0900000D
+#define NETX90_VERSIONREG_REV1 0x0900010D
+#define NETX90_VERSIONREG_REV2 0x0901020D
 
 static int enableClocks(void)
 {
@@ -401,6 +404,7 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	unsigned long ulStrappingOptions;
 	unsigned long *pulId;
 	CHIPID_T tChipID;
+	unsigned long ulVersionRegister;
 
 
 	/* Get the current boot mode. */
@@ -418,9 +422,10 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	ulStrappingOptions |= (ulValue & HOSTMSK(sample_at_porn_stat_in1_sqi_sio2)) >> (HOSTSRT(sample_at_porn_stat_in1_sqi_sio2)-2);
 	ptTestParams->ulStrappingOptions = ulStrappingOptions;
 
-	/* Distinguish netX90, netX90B and netX90BPhyR3. */
+	/* Distinguish netX90, netX90B, netX90BPhyR3 and netX90C. */
 	pulId = (unsigned long*)0x000000c0U;
 	ulValue = *pulId;
+	ulVersionRegister = ptAsicCtrlArea->ulNetx_version;
 	tChipID = CHIPID_unknown;
 	if( ulValue==0x0010a005 )
 	{
@@ -436,7 +441,14 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 		}
 		else if( ulValue==NETX90_PHY_VERSION_3 )
 		{
-			tChipID = CHIPID_netX90BPhyR3;
+			if( ulVersionRegister==NETX90_VERSIONREG_REV2 )
+			{
+				tChipID = CHIPID_netX90C;
+			}
+			else if( ulVersionRegister==NETX90_VERSIONREG_REV1 )
+			{
+				tChipID = CHIPID_netX90BPhyR3;
+			}
 		}
 	}
 	ptTestParams->ulChipID = tChipID;
