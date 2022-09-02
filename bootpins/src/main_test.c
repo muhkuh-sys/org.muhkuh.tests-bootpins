@@ -127,9 +127,9 @@ static void setup_phy_internal(void)
 	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_enable);
 	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_reset);
 	ptIntPhyCfgComArea->ulInt_phy_cfg_phy_ctrl = ulValue;
-
+	
 	systime_delay_ms(100);
-
+	
 	ulValue  = 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_address);
 	ulValue |= 7U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_mode);
 	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_fxmode);
@@ -143,9 +143,9 @@ static void setup_phy_internal(void)
 	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_enable);
 	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_reset);
 	ptIntPhyCfgComArea->ulInt_phy_cfg_phy_ctrl = ulValue;
-
+	
 	systime_delay_ms(100);
-
+	
 	ulValue  = 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_address);
 	ulValue |= 7U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_mode);
 	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_fxmode);
@@ -159,7 +159,7 @@ static void setup_phy_internal(void)
 	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy1_enable);
 	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_reset);
 	ptIntPhyCfgComArea->ulInt_phy_cfg_phy_ctrl = ulValue;
-
+	
 	systime_delay_ms(100);
 }
 
@@ -195,21 +195,29 @@ static unsigned long read_phy_register(unsigned long ulPhy, unsigned long ulRegi
 }
 
 
-static unsigned long get_phy_revision(void)
+static unsigned long get_phy_revision(unsigned int fSetupPhy)
 {
 	int iResult;
 	unsigned long ulValue;
 
-
-	iResult = enableClocks();
-	if( iResult!=0 )
+	iResult = 0;
+	ulValue = NETX90_PHY_VERSION_INVALID;
+	
+	if (fSetupPhy == 0)
 	{
-		ulValue = NETX90_PHY_VERSION_INVALID;
+		uprintf("get_phy_revision: Skipping PHY setup.\n\n"); 
 	}
 	else
 	{
-		setup_phy_internal();
-
+		iResult = enableClocks();
+		if (iResult == 0)
+		{
+			setup_phy_internal();
+		}
+	}
+	
+	if (iResult == 0)
+	{
 		/* Read the PHY version.
 		* The version is split over 2 registers. Register 2 has the "high" part
 		* and register 3 has the "low" part.
@@ -434,7 +442,8 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	else if( ulValue==0x0010d005 )
 	{
 		/* Get the PHY revision. */
-		ulValue = get_phy_revision();
+		
+		ulValue = get_phy_revision(ptTestParams->fSetupPhy);
 		if( ulValue==NETX90_PHY_VERSION_2 )
 		{
 			tChipID = CHIPID_netX90B;

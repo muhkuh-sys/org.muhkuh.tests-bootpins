@@ -66,12 +66,21 @@ function BootPins:read(tPlugin)
 
   -- Download the binary, execute it and get the results back.
   local aParameter = {
+    'INPUT', -- 0: skip PHY setup
     'OUTPUT',
     'OUTPUT',
     'OUTPUT',
     'OUTPUT',
     'OUTPUT'
   }
+
+  -- Skip the PHY setup when the routine is called via ethernet.
+  if (tPlugin:GetTyp()=="romloader_eth") then
+    aParameter[1] = 0 -- do not set up Phy
+  else
+    aParameter[1] = 1 -- set up Phy
+  end
+
   local aAttr = tester:mbin_open(strNetxBinary, tPlugin)
   tester:mbin_debug(aAttr)
   tester:mbin_write(tPlugin, aAttr)
@@ -82,7 +91,7 @@ function BootPins:read(tPlugin)
   end
 
   -- Read the unique ID if there is one.
-  local sizUniqueIdInBits = aParameter[4]
+  local sizUniqueIdInBits = aParameter[5]
   local strUniqueId = ''
   if sizUniqueIdInBits>0 then
     -- Check for an upper limit.
@@ -98,9 +107,9 @@ function BootPins:read(tPlugin)
 
   local atResult = {
     asic_typ = tAsicTyp,
-    boot_mode = aParameter[1],
-    strapping_options = aParameter[2],
-    chip_id = aParameter[3],
+    boot_mode = aParameter[2],
+    strapping_options = aParameter[3],
+    chip_id = aParameter[4],
     size_of_unique_id_in_bits = sizUniqueIdInBits,
     unique_id = strUniqueId
   }

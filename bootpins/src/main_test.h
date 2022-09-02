@@ -40,6 +40,10 @@ typedef union UNIQUE_ID_UNION
 
 typedef struct BOOTPINS_PARAMETER_STRUCT
 {
+	/* input parameters */
+	/* 0: skip setup of clocks/IO/PHY !=0: set up as usual */
+	unsigned int  fSetupPhy;  
+	/* output parameters */
 	unsigned long ulBootMode;
 	unsigned long ulStrappingOptions;
 	unsigned long ulChipID;
