@@ -1,3 +1,37 @@
+--[[
+This version of the script is for inclusion in the CLI flasher. 
+It contains some changes to make it compatible to the 
+versions of romloader and tester_cli used in the flasher.
+
+Changes for compatibility with Romloader: 
+Added chip types net90C and netx90D to astrBinaryName
+
+Changes for compatibility with old tester_cli.lua:
+tester:fn() -> tester.fn()
+tester:fn(...) -> tester.fn(nil, ...)
+for mbin_write, mbin_execute, stdRead, stdWrite, stdCall
+
+Return values:
+asic_typ:               14  romloader chip type returned by plugin:get_chiptyp()
+boot_mode:              2
+strapping_options:      7
+chip_id:                18  chip type from bootpins.atChipID as detected by the routine
+size_of_unique_id_in_bits
+unique_id
+
+Values for chip_id that are relevant for netX 90:
+bootpins.atChipID.unknown      - clock enable mask bits are cleared
+bootpins.atChipID.NETX90       - either netX 90 MPW OR Rev0
+bootpins.atChipID.NETX90B      - netX 90 Rev1
+bootpins.atChipID.NETX90BPHYR3 - netX 90 Rev1 with PHY V3
+bootpins.atChipID.NETX90C      - netX 90 Rev2 
+
+Note: the routine always returns OK.
+If the clock enable fails because the clock_enable_mask bits are cleared,
+The routine returns OK and chip_id is == bootpins.atChipID.unknown
+--]]
+
+
 local class = require 'pl.class'
 local BootPins = class()
 
