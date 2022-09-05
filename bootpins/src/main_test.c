@@ -114,7 +114,17 @@ static void setup_phy_internal(void)
 	ptAsicCtrlArea->ulAsic_ctrl_access_key = ptAsicCtrlArea->ulAsic_ctrl_access_key;  /* @suppress("Assignment to itself") */
 	ptAsicCtrlArea->ulPhy_ctrl0 = ulPhyCtrl;
 
+/* This bit has been introduced with the netx 90 Rev. 1 
+	 and should be set to 1. 
+	 Note: This will not work on Rev.0.
+	 On Rev0, bits 0-3 are the phy_address
+	 Starting with Rev1, bits 0-2 are the phy_address, bit 3 is phy_clk_freq */
+#define MSK_NX90_int_phy_cfg_phy_ctrl_phy_clk_freq              0x00000008U
+#define SRT_NX90_int_phy_cfg_phy_ctrl_phy_clk_freq              3
+#define DFLT_VAL_NX90_int_phy_cfg_phy_ctrl_phy_clk_freq         0x00000000U
+
 	ulValue  = 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_address);
+	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_clk_freq);
 	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_mode);
 	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_fxmode);
 	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_automdix);
@@ -131,6 +141,7 @@ static void setup_phy_internal(void)
 	systime_delay_ms(100);
 	
 	ulValue  = 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_address);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_clk_freq);
 	ulValue |= 7U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_mode);
 	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_fxmode);
 	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_automdix);
@@ -147,6 +158,7 @@ static void setup_phy_internal(void)
 	systime_delay_ms(100);
 	
 	ulValue  = 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_address);
+	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy_clk_freq);
 	ulValue |= 7U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_mode);
 	ulValue |= 0U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_fxmode);
 	ulValue |= 1U << HOSTSRT(int_phy_cfg_phy_ctrl_phy0_automdix);
