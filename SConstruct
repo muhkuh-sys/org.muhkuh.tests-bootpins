@@ -136,24 +136,3 @@ tArtifact0Hash = atEnv.DEFAULT.Hash('%s.hash' % tArtifact0[0].get_path(), tArtif
 tConfiguration0 = atEnv.DEFAULT.Version(os.path.join(strModulePath, '%s-%s.xml' % (strArtifact0, PROJECT_VERSION)), 'installer/jonchki/%s.xml' % strModule)
 tConfiguration0Hash = atEnv.DEFAULT.Hash('%s.hash' % tConfiguration0[0].get_path(), tConfiguration0[0].get_path(), HASH_ALGORITHM='md5,sha1,sha224,sha256,sha384,sha512', HASH_TEMPLATE='${ID_UC}:${HASH}\n')
 tArtifact0Pom = atEnv.DEFAULT.ArtifactVersion(os.path.join(strModulePath, '%s-%s.pom' % (strArtifact0, PROJECT_VERSION)), 'installer/jonchki/pom.xml')
-
-
-#----------------------------------------------------------------------------
-#
-# Make a local demo installation.
-#
-atCopy = {
-    'targets/testbench/netx/bootpins_netx4000.bin':                bootpins_netx4000,
-    'targets/testbench/netx/bootpins_netx500.bin':                 bootpins_netx500,
-    'targets/testbench/netx/bootpins_netx90_mpw.bin':              bootpins_netx90,
-    'targets/testbench/netx/bootpins_netx90.bin':                  bootpins_netx90,
-    'targets/testbench/netx/bootpins_netx56.bin':                  bootpins_netx56,
-    'targets/testbench/netx/bootpins_netx50.bin':                  bootpins_netx50,
-    'targets/testbench/netx/bootpins_netx10.bin':                  bootpins_netx10,
-
-    # Copy all LUA scripts.
-    'targets/testbench/lua/bootpins.lua':                          bootpins_lua,
-    'targets/testbench/lua/bootpins_otp.lua':                      'lua/bootpins_otp.lua'
-}
-for strPathDst, strPathSrc in atCopy.items():
-    Command(strPathDst, strPathSrc, Copy("$TARGET", "$SOURCE"))
