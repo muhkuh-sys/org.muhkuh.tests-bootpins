@@ -27,7 +27,26 @@ function TestClassBootpins:_init(strTestName, uiTestCase, tLogWriter, strLogLeve
 
     P:SC('expected_chip_id', 'The expected chip ID.'):
       required(true):
-      constraint('NETX500,NETX100,NETX50,NETX10,NETX51A_NETX50_COMPATIBILITY_MODE,NETX51B_NETX50_COMPATIBILITY_MODE,NETX51A,NETX51B,NETX52A,NETX52B,NETX4000_RELAXED,NETX4000_FULL,NETX4000_SMALL,NETX90_MPW,NETX90,NETX90B,NETX90BPHYR3,NETX90C'),
+      constraint(table.concat({
+        'NETX500',
+        'NETX100',
+        'NETX50',
+        'NETX10',
+        'NETX51A_NETX50_COMPATIBILITY_MODE',
+        'NETX51B_NETX50_COMPATIBILITY_MODE',
+        'NETX51A',
+        'NETX51B',
+        'NETX52A',
+        'NETX52B',
+        'NETX4000_RELAXED',
+        'NETX4000_FULL',
+        'NETX4000_SMALL',
+        'NETX90_MPW',
+        'NETX90',
+        'NETX90B',
+        'NETX90BPHYR3',
+        'NETX90C'
+      }, ',')),
 
     P:P('expected_otp_fuses', 'A file defining the expected OTP fuses.'):
       required(false),
@@ -85,7 +104,7 @@ end
 
 
 
-function TestClassBootpins:__hexdump_reverse(strData)
+function TestClassBootpins.__hexdump_reverse(strData)
   local astrHex = {}
   for uiPos=1,string.len(strData) do
     table.insert(astrHex, 1, string.format('%02x', string.byte(strData, uiPos)))
@@ -134,9 +153,13 @@ function TestClassBootpins:run()
     atBlacklistLookup = {}
 
     -- Read the complete file.
-    local strBlacklistData, strError = pl.utils.readfile(strBlacklistFilename, false)
+    local strBlacklistData, strBlacklistError = pl.utils.readfile(strBlacklistFilename, false)
     if strBlacklistData==nil then
-      local strError = string.format('Failed to read the blacklist file "%s": %s', strBlacklistFilename, strError)
+      local strError = string.format(
+        'Failed to read the blacklist file "%s": %s',
+        strBlacklistFilename,
+        strBlacklistError
+      )
       tLog.error(strError)
       error(strError)
     end
@@ -167,8 +190,12 @@ function TestClassBootpins:run()
   end
   local tPlugin = _G.tester:getCommonPlugin(strPluginPattern, atPluginOptions)
   if tPlugin==nil then
-    local strPluginOptions = pl.pretty.write(atPluginOptions)
-    local strError = string.format('Failed to establish a connection to the netX with pattern "%s" and options "%s".', strPluginPattern, strPluginOptions)
+    local strPluginOptionsPretty = pl.pretty.write(atPluginOptions)
+    local strError = string.format(
+      'Failed to establish a connection to the netX with pattern "%s" and options "%s".',
+      strPluginPattern,
+      strPluginOptionsPretty
+    )
     error(strError)
   end
 
@@ -181,7 +208,7 @@ function TestClassBootpins:run()
 
   local strUniqueId = nil
   if aBootPins.size_of_unique_id_in_bits>0 then
-    strUniqueId = self:__hexdump_reverse(aBootPins.unique_id)
+    strUniqueId = self.__hexdump_reverse(aBootPins.unique_id)
   end
 
   tLog.debug('Detected values:')
@@ -203,13 +230,21 @@ function TestClassBootpins:run()
     fOk = false
   end
   if ulExpectedBootMode~=nil and ulExpectedBootMode~=aBootPins.boot_mode then
-    local strError = string.format('The expected boot mode is 0x%08x, but 0x%08x was detected.', ulExpectedBootMode, aBootPins.boot_mode)
+    local strError = string.format(
+      'The expected boot mode is 0x%08x, but 0x%08x was detected.',
+      ulExpectedBootMode,
+      aBootPins.boot_mode
+    )
     tLog.error(strError)
     table.insert(astrErrors, strError)
     fOk = false
   end
   if ulExpectedStrappingOptions~=nil and ulExpectedStrappingOptions~=aBootPins.strapping_options then
-    local strError = string.format('The expected strapping options are 0x%08x, but 0x%08x was detected.', ulExpectedStrappingOptions, aBootPins.strapping_options)
+    local strError = string.format(
+      'The expected strapping options are 0x%08x, but 0x%08x was detected.',
+      ulExpectedStrappingOptions,
+      aBootPins.strapping_options
+    )
     table.insert(astrErrors, strError)
     fOk = false
   end
@@ -220,7 +255,9 @@ function TestClassBootpins:run()
   -- On the netX4000, read and compare the OTP fuses.
   if atExpectedOtpFuses~=nil then
     local tAsicTyp = tPlugin:GetChiptyp()
-    if tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4000_RELAXED or tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4000_FULL or tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4100_SMALL then
+    if tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4000_RELAXED or
+       tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4000_FULL or
+       tAsicTyp==_G.romloader.ROMLOADER_CHIPTYP_NETX4100_SMALL then
       local bootpins_otp = self.BootpinsOTP(tLog)
       bootpins_otp:check(tPlugin, atExpectedOtpFuses, strExpectedOtpFusesFile)
     end
