@@ -25,7 +25,7 @@ function TestClassBootpins:_init(strTestName, uiTestCase, tLogWriter, strLogLeve
     P:U32('expected_strapping_options', 'The expected strapping options.'):
       required(false),
 
-    P:SC('expected_chip_id', 'The expected chip ID.'):
+    P:MC('expected_chip_id', 'The expected chip ID.'):
       required(true):
       constraint(table.concat({
         'NETX500',
@@ -129,11 +129,15 @@ function TestClassBootpins:run()
 
   local ulExpectedBootMode         = atParameter["expected_boot_mode"]:get()
   local ulExpectedStrappingOptions = atParameter["expected_strapping_options"]:get()
-  local strExpectedChipId          = atParameter["expected_chip_id"]:get()
-  local ulExpectedChipId = self.bootpins.atChipID[strExpectedChipId]
-  if ulExpectedChipId==nil then
-    tLog.error('Unknown chip ID: "%s"', strExpectedChipId)
-    error('Unknown chip ID.')
+  local astrExpectedChipId         = atParameter["expected_chip_id"]:get()
+  local aulExpectedChipId = {}
+  for _, strExpectedChipId in ipairs(astrExpectedChipId) do
+    local ulExpectedChipId = self.bootpins.atChipID[strExpectedChipId]
+    if ulExpectedChipId==nil then
+      tLog.error('Unknown chip ID: "%s"', strExpectedChipId)
+      error('Unknown chip ID.')
+    end
+    table.insert(aulExpectedChipId, ulExpectedChipId)
   end
   local strExpectedOtpFusesFile    = atParameter['expected_otp_fuses']:get()
   local atExpectedOtpFuses = nil
@@ -224,8 +228,21 @@ function TestClassBootpins:run()
   -- Compare the data with the expected values.
   local fOk = true
   local astrErrors = { 'The detected values do not match the expected data:' }
-  if ulExpectedChipId~=aBootPins.chip_id then
-    local strError = string.format('The expected chip ID is %d (%s), but %d (%s) was detected.', ulExpectedChipId, strExpectedChipId, aBootPins.chip_id, strDetectedChipId)
+  if pl.tablex.find(aulExpectedChipId, aBootPins.chip_id)==nil then
+    local astrMsg = {'The expected chip ID' }
+    local sizChipIds = #aulExpectedChipId
+    if sizChipIds==1 then
+      table.insert(astrMsg, ' is ')
+    else
+      table.insert(astrMsg, 's are ')
+    end
+    local astrIDs = {}
+    for iCnt=1,sizChipIds do
+      table.insert(astrIDs, string.format('%d (%s)', aulExpectedChipId[iCnt], astrExpectedChipId[iCnt]))
+    end
+    table.insert(astrMsg, table.concat(astrIDs, ' or '))
+    table.insert(astrMsg, string.format(', but %d (%s) was detected.', aBootPins.chip_id, strDetectedChipId))
+    local strError = table.concat(astrMsg)
     table.insert(astrErrors, strError)
     fOk = false
   end
