@@ -1,0 +1,71 @@
+
+This document describes the "boot pins" test for the Muhkuh test framework. It reads the current boot mode, the chip ID, and - if available - the strapping options.
+All detected data is compared with expected values. The chapter <<Details>> describes the data for all chip types in detail.
+
+The main purpose of this test is the verification of the correct settings for designs with a fixed boot path.
+
+# Parameter
+
+The following table shows all parameters for this test step.
+The "value" colum shows the assigned value.
+Some parameters have a default value, which is listed in the column "default". If the default value is not overwritten, the "value" column is empty. Furthermore a parameter can be connected to a system parameter or the output of another test step. In this case the value field shows "connected to" with the source of the value.
+
+.List of all parameters
+|===
+| Name        | value | default | description
+
+{{#parameter_list}}
+{{#if}}{{type=='connection'}}| `{{name}}` | connected to `{{value}}` | {{#default}}`{{default}}`{{/default}} | {{description}}{{/if}}
+{{#if}}{{type=='constant'}}| `{{name}}` | `{{value}}` | {{#default}}`{{default}}`{{/default}} | {{description}}{{/if}}
+{{#if}}{{type=='default'}}| `{{name}}` | _see default_ | {{#default}}`{{default}}`{{/default}} | {{description}}{{/if}}
+{{/parameter_list}}
+|===
+
+// # Overview
+
+// [graphviz,format="svg"]
+// ....
+// include::test_flow.gv[]
+// ....
+
+# Details
+
+The netX chips can probe a lot of connected devices for bootable images. Not all devices can be probed at once, as several devices exclude each other.
+One example for an exclusion is the DPM on the one hand and a parallel flash on the host interface on the other. Both share the same pins, but in different I/O modi.
+This is the reason why the possible devices to boot from are separated in several groups. One of the groups can be selected at booting time.
+The devices in one group are probed one after another until a bootable image was found. This forms a kind of path which leads to the name "boot path" for one group.
+
+A boot path is selected with a number of input pins.
+In total there are 3 different pin groups for this selection:
+
+1) the boot mode pins
+2) the strapping options
+3) the chip ID pins
+
+The boot mode pins directly select the boot path. They are available for all netX chips.
+
+The strapping options modify the selected boot path. They allow or forbid entries in a boot path. Furthermore they can exchange boot path entries or activate special features.
+
+The chip ID pins select different modes of a chip. This is currently only available for the netX51/52.
+
+
+=== netX500, netX100 and netX50
+The boot path for the netX500, netX100 and netX50 devices is selected with the RDY and RUN pins.
+
+The devices have no strapping options and no chip ID pins.
+
+
+=== netX51 and netX52
+The boot path for the netX51 and netX52 is selected with the RDY and RUN pins.
+
+The devices have strapping options and chip ID pins.
+
+
+=== netX10
+The boot path for the netX10 is selected with the RDY and RUN pins.
+
+The device has strapping options and chip ID pins.
+
+
+
+

@@ -126,7 +126,11 @@ tArcList0.AddFiles('lua/',
 tArcList0.AddFiles('templates/',
     'lua/test.lua')
 tArcList0.AddFiles('doc/',
-    tDoc)
+    tDoc,
+    "doc/teststep.mustache.asciidoc",
+    "doc/test_flow.gv",
+    "doc/parameter.json"
+    )
 tArcList0.AddFiles('',
     'installer/jonchki/install.lua',
     'installer/jonchki/install_testcase.lua')
