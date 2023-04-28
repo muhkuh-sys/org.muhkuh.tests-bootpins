@@ -1,0 +1,42 @@
+{
+  "$schema" : "./schema/parameter.schema.json",
+
+
+  "parameter": [
+    {
+      "name": "plugin",
+      "description": "A pattern for the plugin to use.",
+      "required": "false"
+    },
+    {
+      "name": "plugin_options",
+      "description": "Plugin options as a JSON object.",
+      "required": "false"
+    },
+    {
+      "name": "expected_boot_mode",
+      "description": "The expected boot mode.",
+      "required": "false"
+    },
+    {
+      "name": "expected_strapping_options",
+      "description": "The expected strapping options.",
+      "required": "false"
+    },
+    {
+      "name": "expected_chip_id",
+      "description": "The expected chip ID.",
+      "required": "true"
+    },
+    {
+      "name": "expected_otp_fuses",
+      "description": "A file defining the expected OTP fuses.",
+      "required": "false"
+    },
+    {
+      "name": "uid_blacklist",
+      "description": "A blacklist for the chip UID. It must contain the exact UID in a line.",
+      "required": "false"
+    }
+  ]
+}

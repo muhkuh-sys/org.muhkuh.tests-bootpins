@@ -125,11 +125,13 @@ tArcList0.AddFiles('lua/',
     'lua/test_class_bootpins.lua')
 tArcList0.AddFiles('templates/',
     'lua/test.lua')
+tArcList0.AddFiles('parameter/',
+  "parameter/org.muhkuh.tests.bootpins.bootpins.json"
+  )
 tArcList0.AddFiles('doc/',
     tDoc,
     "doc/teststep.mustache.asciidoc",
     "doc/test_flow.gv",
-    "doc/parameter.json"
     )
 tArcList0.AddFiles('',
     'installer/jonchki/install.lua',
