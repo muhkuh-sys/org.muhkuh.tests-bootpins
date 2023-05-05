@@ -38,9 +38,9 @@ The devices in one group are probed one after another until a bootable image was
 A boot path is selected with a number of input pins.
 In total there are 3 different pin groups for this selection:
 
-1) the boot mode pins
-2) the strapping options
-3) the chip ID pins
+. the boot mode pins
+. the strapping options
+. the chip ID pins
 
 The boot mode pins directly select the boot path. They are available for all netX chips.
 
