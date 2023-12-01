@@ -49,23 +49,19 @@ The strapping options modify the selected boot path. They allow or forbid entrie
 The chip ID pins select different modes of a chip. This is currently only available for the netX51/52.
 
 
-=== netX500, netX100 and netX50
+== netX500, netX100 and netX50
 The boot path for the netX500, netX100 and netX50 devices is selected with the RDY and RUN pins.
 
 The devices have no strapping options and no chip ID pins.
 
 
-=== netX51 and netX52
+== netX51 and netX52
 The boot path for the netX51 and netX52 is selected with the RDY and RUN pins.
 
 The devices have strapping options and chip ID pins.
 
 
-=== netX10
+== netX10
 The boot path for the netX10 is selected with the RDY and RUN pins.
 
 The device has strapping options and chip ID pins.
-
-
-
-
