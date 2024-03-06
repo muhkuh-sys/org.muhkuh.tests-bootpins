@@ -433,22 +433,24 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	}
 	else if( ulValue==0x0010d005 )
 	{
-		/* Get the PHY revision. */
-		ulValue = get_phy_revision();
-		if( ulValue==NETX90_PHY_VERSION_2 )
+		if( ulVersionRegister==NETX90_VERSIONREG_REV1 )
 		{
-			tChipID = CHIPID_netX90B;
-		}
-		else if( ulValue==NETX90_PHY_VERSION_3 )
-		{
-			if( ulVersionRegister==NETX90_VERSIONREG_REV2 )
+			/* Distinguish netX90B and netX90BPhyR3. */
+
+			/* Get the PHY revision. */
+			ulValue = get_phy_revision();
+			if( ulValue==NETX90_PHY_VERSION_2 )
 			{
-				tChipID = CHIPID_netX90C;
+				tChipID = CHIPID_netX90B;
 			}
-			else if( ulVersionRegister==NETX90_VERSIONREG_REV1 )
+			else if( ulValue==NETX90_PHY_VERSION_3 )
 			{
 				tChipID = CHIPID_netX90BPhyR3;
 			}
+		}
+		else if( ulVersionRegister==NETX90_VERSIONREG_REV2 )
+		{
+			tChipID = CHIPID_netX90C;
 		}
 	}
 	ptTestParams->ulChipID = tChipID;
