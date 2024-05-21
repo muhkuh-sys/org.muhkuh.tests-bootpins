@@ -22,7 +22,8 @@ typedef enum CHIPID_ENUM
 	CHIPID_netX90                               = 15,
 	CHIPID_netX90B                              = 16,
 	CHIPID_netX90BPhyR3                         = 17,
-	CHIPID_netX90C                              = 18
+	CHIPID_netX90C                              = 18,
+	CHIPID_netX90BPhyR2or3                      = 19
 } CHIPID_T;
 
 
@@ -38,8 +39,11 @@ typedef union UNIQUE_ID_UNION
 	unsigned long aul[16/sizeof(unsigned long)];
 } UNIQUE_ID_T;
 
+#define BOOTPINS_FLAGS_PHY_IS_CRITICAL 0x00000001
+
 typedef struct BOOTPINS_PARAMETER_STRUCT
 {
+	unsigned long ulFlags;
 	unsigned long ulBootMode;
 	unsigned long ulStrappingOptions;
 	unsigned long ulChipID;
@@ -49,4 +53,3 @@ typedef struct BOOTPINS_PARAMETER_STRUCT
 
 
 #endif  /* __MAIN_TEST_H__ */
-

@@ -45,14 +45,21 @@ function TestClassBootpins:_init(strTestName, uiTestCase, tLogWriter, strLogLeve
         'NETX90',
         'NETX90B',
         'NETX90BPHYR3',
-        'NETX90C'
+        'NETX90C',
+        'NETX90BPHYR2OR3'
       }, ',')),
 
     P:P('expected_otp_fuses', 'A file defining the expected OTP fuses.'):
       required(false),
 
     P:P('uid_blacklist', 'A blacklist for the chip UID. It must contain the exact UID in a line.'):
-      required(false)
+      required(false),
+
+    P:SC('phy_is_critical',
+         'Do not touch the PHY during the detection. A netX90B can not be distinguished further in this case.'):
+      required(true):
+      default('false'):
+      constraint{'true','false'}
   }
 end
 
@@ -178,6 +185,8 @@ function TestClassBootpins:run()
     end
   end
 
+  local fPhyIsCritical = (atParameter['phy_is_critical']:get() == 'true')
+
   ----------------------------------------------------------------------
   --
   -- Open the connection to the netX.
@@ -203,8 +212,14 @@ function TestClassBootpins:run()
     error(strError)
   end
 
+  -- Create the flags.
+  local ulFlags = 0
+  if fPhyIsCritical then
+    ulFlags = ulFlags + self.bootpins.atFlags.PHY_IS_CRITICAL
+  end
+
   -- Read the bootpins.
-  local aBootPins = self.bootpins:read(tPlugin)
+  local aBootPins = self.bootpins:read(tPlugin, ulFlags)
   local strDetectedChipId = self.bootpins.aulIdToChip[aBootPins.chip_id]
   if strDetectedChipId==nil then
     strDetectedChipId = 'invalid'

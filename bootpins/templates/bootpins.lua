@@ -23,7 +23,8 @@ function BootPins:_init()
     ['NETX90']                             = ${CHIPID_netX90},
     ['NETX90B']                            = ${CHIPID_netX90B},
     ['NETX90BPHYR3']                       = ${CHIPID_netX90BPhyR3},
-    ['NETX90C']                            = ${CHIPID_netX90C}
+    ['NETX90C']                            = ${CHIPID_netX90C},
+    ['NETX90BPHYR2OR3']                    = ${CHIPID_netX90BPhyR2or3}
   }
   self.atChipID = atChipID
 
@@ -34,6 +35,11 @@ function BootPins:_init()
   end
   self.aulIdToChip = aulIdToChip
 
+  self.atFlags = {
+    ['PHY_IS_CRITICAL']                 = ${BOOTPINS_FLAGS_PHY_IS_CRITICAL}
+  }
+
+  local romloader = require 'romloader'
   self.astrBinaryName = {
     [romloader.ROMLOADER_CHIPTYP_NETX4000_RELAXED] = '4000',
     [romloader.ROMLOADER_CHIPTYP_NETX4000_FULL]    = '4000',
@@ -55,7 +61,9 @@ end
 
 
 -- Read the boot pins from the netX.
-function BootPins:read(tPlugin)
+function BootPins:read(tPlugin, ulFlags)
+  ulFlags = ulFlags or 0
+
   -- Get the binary for the ASIC.
   local tAsicTyp = tPlugin:GetChiptyp()
   local strBinary = self.astrBinaryName[tAsicTyp]
@@ -66,12 +74,14 @@ function BootPins:read(tPlugin)
 
   -- Download the binary, execute it and get the results back.
   local aParameter = {
+    ulFlags,
     'OUTPUT',
     'OUTPUT',
     'OUTPUT',
     'OUTPUT',
     'OUTPUT'
   }
+  local tester = _G.tester
   local aAttr = tester:mbin_open(strNetxBinary, tPlugin)
   tester:mbin_debug(aAttr)
   tester:mbin_write(tPlugin, aAttr)
@@ -82,7 +92,7 @@ function BootPins:read(tPlugin)
   end
 
   -- Read the unique ID if there is one.
-  local sizUniqueIdInBits = aParameter[4]
+  local sizUniqueIdInBits = aParameter[5]
   local strUniqueId = ''
   if sizUniqueIdInBits>0 then
     -- Check for an upper limit.
@@ -93,14 +103,14 @@ function BootPins:read(tPlugin)
     local sizUniqueId = math.ceil(sizUniqueIdInBits / 8)
 
     -- Read the unique ID.
-    strUniqueId = tester:stdRead(tPlugin, aAttr.ulParameterStartAddress+0x0c+0x10, sizUniqueId)
+    strUniqueId = tester:stdRead(tPlugin, aAttr.ulParameterStartAddress+0x0c+0x14, sizUniqueId)
   end
 
   local atResult = {
     asic_typ = tAsicTyp,
-    boot_mode = aParameter[1],
-    strapping_options = aParameter[2],
-    chip_id = aParameter[3],
+    boot_mode = aParameter[2],
+    strapping_options = aParameter[3],
+    chip_id = aParameter[4],
     size_of_unique_id_in_bits = sizUniqueIdInBits,
     unique_id = strUniqueId
   }

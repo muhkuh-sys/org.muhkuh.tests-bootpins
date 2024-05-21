@@ -435,17 +435,31 @@ static void get_values(BOOTPINS_PARAMETER_T *ptTestParams)
 	{
 		if( ulVersionRegister==NETX90_VERSIONREG_REV1 )
 		{
-			/* Distinguish netX90B and netX90BPhyR3. */
-
-			/* Get the PHY revision. */
-			ulValue = get_phy_revision();
-			if( ulValue==NETX90_PHY_VERSION_2 )
+			/* Further examination can only be done by accessing the PHY.
+			 * This will corrupt a running Ethernet communication. Check
+			 * the flags if the PHY is critical.
+			 */
+			ulValue  = ptTestParams->ulFlags;
+			ulValue &= BOOTPINS_FLAGS_PHY_IS_CRITICAL;
+			if( ulValue!=0 )
 			{
-				tChipID = CHIPID_netX90B;
+				uprintf("Not touching the PHY as it is marked as 'critical'.\n");
+				tChipID = CHIPID_netX90BPhyR2or3;
 			}
-			else if( ulValue==NETX90_PHY_VERSION_3 )
+			else
 			{
-				tChipID = CHIPID_netX90BPhyR3;
+				/* Distinguish netX90B and netX90BPhyR3. */
+
+				/* Get the PHY revision. */
+				ulValue = get_phy_revision();
+				if( ulValue==NETX90_PHY_VERSION_2 )
+				{
+					tChipID = CHIPID_netX90B;
+				}
+				else if( ulValue==NETX90_PHY_VERSION_3 )
+				{
+					tChipID = CHIPID_netX90BPhyR3;
+				}
 			}
 		}
 		else if( ulVersionRegister==NETX90_VERSIONREG_REV2 )
@@ -637,6 +651,7 @@ TEST_RESULT_T test_main(TEST_PARAMETER_T *ptTestParam)
 
 	/* Get the test parameter. */
 	ptTestParams = (BOOTPINS_PARAMETER_T*)(ptTestParam->pvInitParams);
+	uprintf("Flags: 0x%08x\n", ptTestParams->ulFlags);
 	get_values(ptTestParams);
 
 	rdy_run_setLEDs(RDYRUN_GREEN);
