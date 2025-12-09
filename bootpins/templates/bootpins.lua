@@ -5,26 +5,26 @@ function BootPins:_init()
   self.romloader = require 'romloader'
 
   local atChipID = {
-    ['unknown']                            = ${CHIPID_unknown},
-    ['NETX500']                            = ${CHIPID_netX500},
-    ['NETX100']                            = ${CHIPID_netX100},
-    ['NETX50']                             = ${CHIPID_netX50},
-    ['NETX10']                             = ${CHIPID_netX10},
-    ['NETX51A_NETX50_COMPATIBILITY_MODE']  = ${CHIPID_netX51A_netX50_compatibility_mode},
-    ['NETX51B_NETX50_COMPATIBILITY_MODE']  = ${CHIPID_netX51B_netX50_compatibility_mode},
-    ['NETX51A']                            = ${CHIPID_netX51A},
-    ['NETX51B']                            = ${CHIPID_netX51B},
-    ['NETX52A']                            = ${CHIPID_netX52A},
-    ['NETX52B']                            = ${CHIPID_netX52B},
-    ['NETX4000_RELAXED']                   = ${CHIPID_netX4000_RELAXED},
-    ['NETX4000_FULL']                      = ${CHIPID_netX4000_FULL},
-    ['NETX4000_SMALL']                     = ${CHIPID_netX4000_SMALL},
-    ['NETX90_MPW']                         = ${CHIPID_netX90_MPW},
-    ['NETX90']                             = ${CHIPID_netX90},
-    ['NETX90B']                            = ${CHIPID_netX90B},
-    ['NETX90BPHYR3']                       = ${CHIPID_netX90BPhyR3},
-    ['NETX90C']                            = ${CHIPID_netX90C},
-    ['NETX90BPHYR2OR3']                    = ${CHIPID_netX90BPhyR2or3}
+    ['unknown']                            = XX_CHIPID_unknown_XX,
+    ['NETX500']                            = XX_CHIPID_netX500_XX,
+    ['NETX100']                            = XX_CHIPID_netX100_XX,
+    ['NETX50']                             = XX_CHIPID_netX50_XX,
+    ['NETX10']                             = XX_CHIPID_netX10_XX,
+    ['NETX51A_NETX50_COMPATIBILITY_MODE']  = XX_CHIPID_netX51A_netX50_compatibility_mode_XX,
+    ['NETX51B_NETX50_COMPATIBILITY_MODE']  = XX_CHIPID_netX51B_netX50_compatibility_mode_XX,
+    ['NETX51A']                            = XX_CHIPID_netX51A_XX,
+    ['NETX51B']                            = XX_CHIPID_netX51B_XX,
+    ['NETX52A']                            = XX_CHIPID_netX52A_XX,
+    ['NETX52B']                            = XX_CHIPID_netX52B_XX,
+    ['NETX4000_RELAXED']                   = XX_CHIPID_netX4000_RELAXED_XX,
+    ['NETX4000_FULL']                      = XX_CHIPID_netX4000_FULL_XX,
+    ['NETX4000_SMALL']                     = XX_CHIPID_netX4000_SMALL_XX,
+    ['NETX90_MPW']                         = XX_CHIPID_netX90_MPW_XX,
+    ['NETX90']                             = XX_CHIPID_netX90_XX,
+    ['NETX90B']                            = XX_CHIPID_netX90B_XX,
+    ['NETX90BPHYR3']                       = XX_CHIPID_netX90BPhyR3_XX,
+    ['NETX90C']                            = XX_CHIPID_netX90C_XX,
+    ['NETX90BPHYR2OR3']                    = XX_CHIPID_netX90BPhyR2or3_XX
   }
   self.atChipID = atChipID
 
@@ -36,7 +36,7 @@ function BootPins:_init()
   self.aulIdToChip = aulIdToChip
 
   self.atFlags = {
-    ['PHY_IS_CRITICAL']                 = ${BOOTPINS_FLAGS_PHY_IS_CRITICAL}
+    ['PHY_IS_CRITICAL']                 = XX_BOOTPINS_FLAGS_PHY_IS_CRITICAL_XX
   }
 
   local romloader = require 'romloader'
