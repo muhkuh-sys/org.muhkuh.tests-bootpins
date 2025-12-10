@@ -15,7 +15,7 @@
 	.extern test_main
 
 	.global start
-	.global stack_top
+	.extern stack_top
 
 	@ optional can be used by python script to define individual entry points for cortex CA9 core0/1
 #if ASIC_TYP==ASIC_TYP_NETX4000_RELAXED || ASIC_TYP==ASIC_TYP_NETX4000
