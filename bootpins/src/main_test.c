@@ -16,8 +16,6 @@ TEST_RESULT_T test_main(TEST_PARAMETER_T *ptTestParam)
 {
 	TEST_RESULT_T tTestResult;
 	BOOTPINS_PARAMETER_T *ptTestParams;
-	unsigned long ulTimer;
-	int iElapsed;
 
 
 	systime_init();
@@ -29,11 +27,7 @@ TEST_RESULT_T test_main(TEST_PARAMETER_T *ptTestParam)
 	rdy_run_setLEDs(RDYRUN_OFF);
 
 	/* Delay for 500ms to decharge the RDY/RUN lines. */
-	ulTimer = systime_get_ms();
-	do
-	{
-		iElapsed = systime_elapsed(ulTimer, 500);
-	} while( iElapsed==0 );
+	systime_delay_ms(500);
 
 	/* Get the test parameter. */
 	ptTestParams = (BOOTPINS_PARAMETER_T*)(ptTestParam->pvInitParams);
@@ -45,6 +39,3 @@ TEST_RESULT_T test_main(TEST_PARAMETER_T *ptTestParam)
 
 	return tTestResult;
 }
-
-/*-----------------------------------*/
-
