@@ -31,7 +31,7 @@ if atEnv:hasEnv('NETX50') then
 --  tEnv:CompileCommands('targets/platform/netx50/compile_commands.json')
   tEnv:SetBuildPath('targets/platform/netx50', 'platform/src/lib')
 
-  tEnv.cc.includes:Merge(astrPlatformLibIncludes)
+  tEnv:AddIncludes(astrPlatformLibIncludes)
   local tObj = tEnv:Compile(astrPlatformLibSources)
   local tLib = tEnv:StaticLibrary('targets/platform/platform_netx50.a', tObj)
   atEnv:mergeEnv(tEnv, { PLATFORM_LIB=tLib })
@@ -43,7 +43,7 @@ if atEnv:hasEnv('NETX56') then
 --  tEnv:CompileCommands('targets/platform/netx56/compile_commands.json')
   tEnv:SetBuildPath('targets/platform/netx56', 'platform/src/lib')
 
-  tEnv.cc.includes:Merge(astrPlatformLibIncludes)
+  tEnv:AddIncludes(astrPlatformLibIncludes)
   local tObj = tEnv:Compile(astrPlatformLibSources)
   local tLib = tEnv:StaticLibrary('targets/platform/platform_netx56.a', tObj)
   atEnv:mergeEnv(tEnv, { PLATFORM_LIB=tLib })
@@ -55,7 +55,7 @@ if atEnv:hasEnv('NETX90') then
 --  tEnv:CompileCommands('targets/platform/netx90/compile_commands.json')
   tEnv:SetBuildPath('targets/platform/netx90', 'platform/src/lib')
 
-  tEnv.cc.includes:Merge(astrPlatformLibIncludes)
+  tEnv:AddIncludes(astrPlatformLibIncludes)
   local tObj = tEnv:Compile(astrPlatformLibSources)
   local tLib = tEnv:StaticLibrary('targets/platform/platform_netx90.a', tObj)
   atEnv:mergeEnv(tEnv, { PLATFORM_LIB=tLib })
@@ -68,7 +68,7 @@ if atEnv:hasEnv('NETX500') then
 --  tEnv:CompileCommands('targets/platform/netx500/compile_commands.json')
   tEnv:SetBuildPath('targets/platform/netx500', 'platform/src/lib')
 
-  tEnv.cc.includes:Merge(astrPlatformLibIncludes)
+  tEnv:AddIncludes(astrPlatformLibIncludes)
   local tObj = tEnv:Compile(astrPlatformLibSources)
   local tLib = tEnv:StaticLibrary('targets/platform/platform_netx500.a', tObj)
   atEnv:mergeEnv(tEnv, { PLATFORM_LIB=tLib })
@@ -99,7 +99,7 @@ if atEnv:hasEnv('NETX50') then
 --  tEnv:CompileCommands('targets/bootpins/netx50/compile_commands.json')
   tEnv:SetBuildPath('targets/bootpins/netx50', 'bootpins/src')
 
-  tEnv.cc.includes:Merge(astrIncludes)
+  tEnv:AddIncludes(astrIncludes)
   local tObj = tEnv:Compile(astrTestSources)
   local tElf = tEnv:Link(
     'targets/bootpins/bootpins_netx50.elf',
@@ -120,7 +120,7 @@ if atEnv:hasEnv('NETX56') then
 --  tEnv:CompileCommands('targets/bootpins/netx56/compile_commands.json')
   tEnv:SetBuildPath('targets/bootpins/netx56', 'bootpins/src')
 
-  tEnv.cc.includes:Merge(astrIncludes)
+  tEnv:AddIncludes(astrIncludes)
   local tObj = tEnv:Compile(astrTestSources)
   local tElf = tEnv:Link(
     'targets/bootpins/bootpins_netx56.elf',
@@ -141,7 +141,7 @@ if atEnv:hasEnv('NETX90') then
 --  tEnv:CompileCommands('targets/bootpins/netx90/compile_commands.json')
   tEnv:SetBuildPath('targets/bootpins/netx90', 'bootpins/src')
 
-  tEnv.cc.includes:Merge(astrIncludes)
+  tEnv:AddIncludes(astrIncludes)
   local tObj = tEnv:Compile(astrTestSources)
   local tElf = tEnv:Link(
     'targets/bootpins/bootpins_netx90.elf',
@@ -163,7 +163,7 @@ if atEnv:hasEnv('NETX500') then
 --  tEnv:CompileCommands('targets/bootpins/netx500/compile_commands.json')
   tEnv:SetBuildPath('targets/bootpins/netx500', 'bootpins/src')
 
-  tEnv.cc.includes:Merge(astrIncludes)
+  tEnv:AddIncludes(astrIncludes)
   local tObj = tEnv:Compile(astrTestSources)
   local tElf = tEnv:Link(
     'targets/bootpins/bootpins_netx500.elf',
