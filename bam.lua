@@ -1,12 +1,12 @@
 local atEnv = require 'mbs2'
 
 -- Create all compiler environments.
-atEnv:createEnv('NETX50',      {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX50' })
-atEnv:createEnv('NETX56',      {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX56' })
-atEnv:createEnv('NETX90',      {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX90' })
-atEnv:createEnv('NETX500',     {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX500' })
+atEnv:createEnv('NETX50',          {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX50' })
+atEnv:createEnv('NETX56',          {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX56' })
+atEnv:createEnv('NETX90',          {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX90' })
+atEnv:createEnv('NETX500',         {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX500' })
 --atEnv:createEnv('NETX4000',    {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX4000' })
---atEnv:createEnv('NETX9X2_COM', {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX9X2_COM_MPW' })
+atEnv:createEnv('NETX9X2_COM_MPW', {{id='gcc-arm-none-eabi', version='10.3'}}, { asic_typ='NETX9X2_COM_MPW' })
 
 ---------------------------------------------------------------------------------------------------------------------
 --
@@ -74,6 +74,19 @@ if atEnv:hasEnv('NETX500') then
   atEnv:mergeEnv(tEnv, { PLATFORM_LIB=tLib })
 end
 
+
+if atEnv:hasEnv('NETX9X2_COM_MPW') then
+  local tEnv = atEnv:cloneEnv('NETX9X2_COM_MPW', { label='platform netx9x2 mpw' })
+--  tEnv:CompileCommands('targets/platform/netx500/compile_commands.json')
+  tEnv:SetBuildPath('targets/platform/netx9x2mpw', 'platform/src/lib')
+
+  tEnv:AddIncludes(astrPlatformLibIncludes)
+  local tObj = tEnv:Compile(astrPlatformLibSources)
+  local tLib = tEnv:StaticLibrary('targets/platform/platform_netx9x2mpw.a', tObj)
+  atEnv:mergeEnv(tEnv, { PLATFORM_LIB=tLib })
+end
+
+
 ---------------------------------------------------------------------------------------------------------------------
 --
 -- Build the test code.
@@ -91,7 +104,8 @@ local astrTestSources = {
 local astrIncludes = {
   'platform/src',
   'platform/src/lib',
-  'targets/version'
+  'targets/version',
+  'bootpins/src'
 }
 
 if atEnv:hasEnv('NETX50') then
@@ -100,7 +114,10 @@ if atEnv:hasEnv('NETX50') then
   tEnv:SetBuildPath('targets/bootpins/netx50', 'bootpins/src')
 
   tEnv:AddIncludes(astrIncludes)
-  local tObj = tEnv:Compile(astrTestSources)
+  local tObj = tEnv:Compile(
+    astrTestSources,
+    'bootpins/src/netx50/detect.c'
+  )
   local tElf = tEnv:Link(
     'targets/bootpins/bootpins_netx50.elf',
     'bootpins/src/netx50/netx50.ld',
@@ -121,7 +138,10 @@ if atEnv:hasEnv('NETX56') then
   tEnv:SetBuildPath('targets/bootpins/netx56', 'bootpins/src')
 
   tEnv:AddIncludes(astrIncludes)
-  local tObj = tEnv:Compile(astrTestSources)
+  local tObj = tEnv:Compile(
+    astrTestSources,
+    'bootpins/src/netx56/detect.c'
+  )
   local tElf = tEnv:Link(
     'targets/bootpins/bootpins_netx56.elf',
     'bootpins/src/netx56/netx56.ld',
@@ -142,7 +162,10 @@ if atEnv:hasEnv('NETX90') then
   tEnv:SetBuildPath('targets/bootpins/netx90', 'bootpins/src')
 
   tEnv:AddIncludes(astrIncludes)
-  local tObj = tEnv:Compile(astrTestSources)
+  local tObj = tEnv:Compile(
+    astrTestSources,
+    'bootpins/src/netx90/detect.c'
+  )
   local tElf = tEnv:Link(
     'targets/bootpins/bootpins_netx90.elf',
     'bootpins/src/netx90/netx90.ld',
@@ -158,13 +181,40 @@ end
 
 
 
+if atEnv:hasEnv('NETX9X2_COM_MPW') then
+  local tEnv = atEnv:cloneEnv('NETX9X2_COM_MPW', { label='testcode netx9x2 mpw' })
+--  tEnv:CompileCommands('targets/bootpins/netx9x2mpw/compile_commands.json')
+  tEnv:SetBuildPath('targets/bootpins/netx9x2mpw', 'bootpins/src')
+
+  tEnv:AddIncludes(astrIncludes)
+  local tObj = tEnv:Compile(
+    astrTestSources,
+    'bootpins/src/netx9x2/detect.c'
+  )
+  local tElf = tEnv:Link(
+    'targets/bootpins/bootpins_netx9x2mpw.elf',
+    'bootpins/src/netx9x2/netx9x2.ld',
+    tObj,
+    tEnv.mbs.PLATFORM_LIB
+  )
+  local tBin = tEnv:Elf2Bin(
+    'targets/bootpins/bootpins_netx9x2.bin',
+    tElf
+  )
+  atEnv:mergeEnv(tEnv, { TESTCODE_ELF=tElf, TESTCODE_BIN=tBin })
+end
+
+
 if atEnv:hasEnv('NETX500') then
   local tEnv = atEnv:cloneEnv('NETX500', { label='testcode netx500' })
 --  tEnv:CompileCommands('targets/bootpins/netx500/compile_commands.json')
   tEnv:SetBuildPath('targets/bootpins/netx500', 'bootpins/src')
 
   tEnv:AddIncludes(astrIncludes)
-  local tObj = tEnv:Compile(astrTestSources)
+  local tObj = tEnv:Compile(
+    astrTestSources,
+    'bootpins/src/netx500/detect.c'
+  )
   local tElf = tEnv:Link(
     'targets/bootpins/bootpins_netx500.elf',
     'bootpins/src/netx500/netx500.ld',
