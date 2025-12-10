@@ -1,6 +1,6 @@
+#ifndef __DETECT_H__
+#define __DETECT_H__
 
-#ifndef __MAIN_TEST_H__
-#define __MAIN_TEST_H__
 
 typedef enum CHIPID_ENUM
 {
@@ -23,7 +23,8 @@ typedef enum CHIPID_ENUM
 	CHIPID_netX90B                              = 16,
 	CHIPID_netX90BPhyR3                         = 17,
 	CHIPID_netX90C                              = 18,
-	CHIPID_netX90BPhyR2or3                      = 19
+	CHIPID_netX90BPhyR2or3                      = 19,
+	CHIPID_netX9x2_MPW                          = 20
 } CHIPID_T;
 
 
@@ -52,4 +53,7 @@ typedef struct BOOTPINS_PARAMETER_STRUCT
 } BOOTPINS_PARAMETER_T;
 
 
-#endif  /* __MAIN_TEST_H__ */
+void get_values(BOOTPINS_PARAMETER_T *ptTestParams);
+
+
+#endif  /* __DETECT_H__ */
